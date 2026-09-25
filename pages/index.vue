@@ -1,0 +1,623 @@
+<template>
+  <!-- Container หลักพร้อมพื้นหลังดาร์คโทน -->
+  <div class="min-h-screen bg-slate-950 text-slate-100 font-sans pb-12 relative overflow-hidden">
+    
+    <!-- Background Image Placeholders (กรอบรางๆ สำหรับเตรียมใส่รูปภาพในอนาคต) -->
+    <div class="fixed top-[-5%] left-[-5%] w-[500px] h-[500px] bg-cover bg-center rounded-3xl pointer-events-none rotate-12 backdrop-blur-xs opacity-30 border border-slate-700/50" style="background-image: url('/img/image.png');"></div>
+
+<div class="fixed top-[20%] right-[-5%] w-[600px] h-[600px] bg-cover bg-center rounded-3xl pointer-events-none -rotate-6 backdrop-blur-xs opacity-30 border border-slate-700/50" style="background-image: url('/img/541F17CF-F73E-4E4C-A209-D750B423A3F1.png');"></div>
+
+<div class="fixed bottom-[-10%] left-[15%] w-[500px] h-[500px] bg-cover bg-center rounded-3xl pointer-events-none rotate-4 backdrop-blur-xs opacity-30 border border-slate-700/50" style="background-image: url('/img/image1.png');"></div>
+
+
+
+    <!-- Header & Profile Bar & Logout -->
+    <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center space-x-3">
+         <div 
+  class="w-20 h-20 rounded-lg shadow-lg shadow-red-600/40 border border-red-500/50 bg-cover bg-center shrink-0" 
+  style="background-image: url('/img/541F17CF-F73E-4E4C-A209-D750B423A3F1.png');"
+></div>
+          <div>
+            <h1 class="text-xl font-bold tracking-wider text-white flex items-center gap-2">
+              PUKPIK GANG
+            </h1>
+            
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- แสดงข้อมูลบัญชีผู้ใช้งานจริง -->
+          <div class="flex items-center gap-3 bg-slate-950/80 px-3 py-1.5 rounded-lg border border-slate-800 backdrop-blur">
+            <div class="text-right">
+              <p class="text-xs font-bold text-white">{{ currentUserProfile?.character_name || 'ไม่พบข้อมูลผู้ใช้' }}</p>
+              <div class="text-[10px] text-slate-400 mt-0.5">
+                <span :class="getRoleBadge(currentUserRole)" class="px-1.5 py-0.5 rounded font-semibold text-[10px]">
+                  {{ getRoleName(currentUserRole) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ปุ่มออกจากระบบ (Logout) -->
+          <button 
+            @click="handleLogout" 
+            class="bg-slate-800 hover:bg-red-600/20 text-slate-300 hover:text-red-400 border border-slate-700 hover:border-red-500/40 text-xs px-3 py-2 rounded-lg transition flex items-center gap-1.5 cursor-pointer"
+          >
+            🚪 ออกจากระบบ
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 mt-8 space-y-8 relative z-10">
+      <!-- Nav Tabs -->
+      <div class="flex border-b border-slate-800 gap-2 overflow-x-auto">
+        <button 
+          v-for="tab in tabs" 
+          :key="tab.id"
+          @click="activeTab = tab.id"
+          :class="[
+            'px-5 py-3 font-medium text-sm border-b-2 transition whitespace-nowrap cursor-pointer',
+            activeTab === tab.id ? 'border-red-500 font-bold text-red-500 bg-red-500/5' : 'border-transparent text-slate-400 hover:text-slate-200'
+          ]"
+        >
+          {{ tab.label }}
+          <span v-if="tab.badge && tab.badge > 0" class="ml-2 px-2 py-0.5 text-xs bg-red-600 text-white rounded-full animate-pulse">
+            {{ tab.badge }}
+          </span>
+        </button>
+      </div>
+
+      <!-- Tab 1: รายชื่อสมาชิก & การเช็คชื่อ -->
+      <div v-if="activeTab === 'members'" class="space-y-6">
+        <!-- ฟอร์มเช็คชื่อ -->
+        <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
+          <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <span class="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
+            เช็คชื่อเข้า-ออกเมือง
+          </h2>
+          <form @submit.prevent="handleCheckin" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">ประเภท</label>
+              <select v-model="checkinForm.type" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500">
+                <option value="in">เข้าเมือง (Check-In)</option>
+                <option value="out">ออกเมือง (Check-Out)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">เลือกรูปภาพหลักฐานจากเครื่อง</label>
+              <input 
+                type="file" 
+                accept="image/*" 
+                @change="handleCheckinFileSelect" 
+                required 
+                class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-slate-300 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 cursor-pointer" 
+              />
+            </div>
+            <div class="flex items-end">
+              <button 
+                type="submit" 
+                :disabled="isUploadingCheckin"
+                class="w-full bg-red-600 hover:bg-red-700 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-sm transition flex justify-center items-center gap-2 cursor-pointer shadow-lg shadow-red-600/20"
+              >
+                <span v-if="isUploadingCheckin">กำลังอัปโหลด...</span>
+                <span v-else>ส่งหลักฐานเช็คชื่อ</span>
+              </button>
+            </div>
+          </form>
+
+          <div v-if="checkinImagePreview" class="mt-4">
+            <p class="text-xs text-slate-400 mb-2">ตัวอย่างรูปเช็คชื่อ:</p>
+            <img :src="checkinImagePreview" class="h-32 rounded-lg border border-slate-800 object-cover" />
+          </div>
+        </div>
+
+        <!-- คิวรออนุมัติเช็คชื่อ (เฉพาะ หัวหน้า / รองหัวหน้า) -->
+        <div v-if="isManagement && pendingCheckins.length > 0" class="bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl">
+          <h2 class="text-lg font-bold text-amber-400 mb-4">⏳ รายการเช็คชื่อรออนุมัติ ({{ pendingCheckins.length }})</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-for="item in pendingCheckins" :key="item.id" class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="font-bold text-white">{{ item.profiles?.character_name || 'สมาชิก' }}</p>
+                  <p class="text-xs text-slate-400">ประเภท: <span :class="item.check_type === 'in' ? 'text-green-400' : 'text-red-400'">{{ item.check_type === 'in' ? 'เข้าเมือง' : 'ออกเมือง' }}</span></p>
+                </div>
+                <span class="text-[10px] text-slate-500">{{ new Date(item.created_at).toLocaleTimeString() }}</span>
+              </div>
+              <a :href="item.image_url" target="_blank" class="block">
+                <img :src="item.image_url" class="w-full h-32 object-cover rounded-md border border-slate-800 hover:opacity-90 transition" />
+              </a>
+              <div class="flex gap-2 pt-2 border-t border-slate-800">
+                <button @click="store.approveCheckin(item.id, item.user_id, item.check_type, true)" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1.5 rounded font-medium cursor-pointer">อนุมัติ</button>
+                <button @click="store.approveCheckin(item.id, item.user_id, item.check_type, false)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-1.5 rounded cursor-pointer">ปฏิเสธ</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ตารางรายชื่อสมาชิกแก๊ง -->
+        <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+          <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+            <h2 class="font-bold text-white">รายชื่อสมาชิกทั้งหมด</h2>
+            <button v-if="isManagement" @click="exportCSV" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 cursor-pointer">
+              📥 ส่งออกไฟล์ CSV
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-300">
+              <thead class="bg-slate-950/80 text-xs text-slate-400 uppercase">
+                <tr>
+                  <th class="p-4">ชื่อในเมือง</th>
+                  <th class="p-4">ตำแหน่ง</th>
+                  <th class="p-4">เบอร์โทร</th>
+                  <th class="p-4">สถานะในเมือง</th>
+                  <th class="p-4">หลักฐานล่าสุด</th>
+                  <th v-if="isManagement" class="p-4 text-center">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/80">
+                <tr v-for="member in getArray(store.profiles)" :key="member.id" class="hover:bg-slate-800/40 transition">
+                  <td class="p-4 font-medium text-white">{{ member.character_name }}</td>
+                  <td class="p-4">
+                    <span :class="getRoleBadge(member.role)" class="px-2.5 py-1 rounded-full text-xs font-semibold">
+                      {{ getRoleName(member.role) }}
+                    </span>
+                  </td>
+                  <td class="p-4 text-slate-400">{{ member.phone_number || '-' }}</td>
+                  <td class="p-4">
+                    <span :class="member.is_online ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-slate-800 text-slate-500 border-slate-700'" class="px-2.5 py-1 rounded-full text-xs border flex items-center w-fit gap-1.5">
+                      <span class="w-1.5 h-1.5 rounded-full" :class="member.is_online ? 'bg-green-400 animate-pulse' : 'bg-slate-500'"></span>
+                      {{ member.is_online ? 'อยู่ในเมือง (Online)' : 'นอกเมือง (Offline)' }}
+                    </span>
+                  </td>
+
+                  <td class="p-4">
+                    <div v-if="store.getLatestCheckinImage && store.getLatestCheckinImage(member.id)" class="flex items-center gap-2">
+                      <a 
+                        :href="store.getLatestCheckinImage(member.id)" 
+                        target="_blank" 
+                        class="bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 px-2.5 py-1 rounded text-xs border border-slate-700 flex items-center gap-1 transition"
+                      >
+                        📷 View รูป
+                      </a>
+                    </div>
+                    <span v-else class="text-xs text-slate-600 italic">ไม่มีหลักฐาน</span>
+                  </td>
+
+                  <td v-if="isManagement" class="p-4 text-center">
+                    <button 
+                      @click="handleDeleteMember(member)" 
+                      class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs px-3 py-1 rounded-lg transition cursor-pointer"
+                    >
+                      ลบออก
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: คลังเงินแก๊ง -->
+      <div v-if="activeTab === 'treasury'" class="space-y-6">
+        <div class="bg-gradient-to-r from-slate-900/90 via-slate-900/90 to-red-950/80 border border-slate-800 rounded-xl p-6 shadow-xl flex justify-between items-center backdrop-blur">
+          <div>
+            <p class="text-xs text-slate-400 mb-1">ยอดเงินคงเหลือในคลังแก๊ง</p>
+            <p class="text-4xl font-black text-green-400 font-mono drop-shadow">${{ (getVal(store.totalBalance) || 0).toLocaleString() }}</p>
+          </div>
+          <div class="text-right text-xs text-slate-500">
+            <p v-if="!isLeader" class="text-amber-400/80">🔒 สมาชิกดูได้อย่างเดียว (เฉพาะหัวหน้าเท่านั้นที่ถอน/ฝากได้)</p>
+          </div>
+        </div>
+
+        <div v-if="isLeader" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
+          <h2 class="text-lg font-bold text-white mb-4">ทำรายการ ฝาก / ถอน เงิน</h2>
+          <form @submit.prevent="handleTreasury" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">ประเภท</label>
+              <select v-model="treasuryForm.type" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500">
+                <option value="deposit">ฝากเงินเข้า (+)</option>
+                <option value="withdraw">ถอนเงินออก (-)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">จำนวนเงิน ($)</label>
+              <input v-model.number="treasuryForm.amount" type="number" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">หมายเหตุ / เหตุผล</label>
+              <input v-model="treasuryForm.description" type="text" placeholder="เช่น ค่าสภา" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
+            </div>
+            <div class="flex items-end">
+              <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg text-sm transition cursor-pointer shadow-lg shadow-green-600/20">
+                บันทึกรายการ
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+          <div class="p-4 border-b border-slate-800 font-bold text-white bg-slate-900/50">ประวัติการธุรกรรม</div>
+          <div class="divide-y divide-slate-800/80">
+            <div v-for="log in getArray(store.treasuryLogs)" :key="log.id" class="p-4 flex justify-between items-center hover:bg-slate-800/30 transition">
+              <div>
+                <p class="font-medium text-white">{{ log.description }}</p>
+                <p class="text-xs text-slate-500">โดย: {{ log.created_by }} • {{ new Date(log.created_at).toLocaleString() }}</p>
+              </div>
+              <p :class="log.type === 'deposit' ? 'text-green-400' : 'text-red-400'" class="font-mono font-bold text-lg">
+                {{ log.type === 'deposit' ? '+' : '-' }}${{ Number(log.amount).toLocaleString() }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: คลังของแก๊ง -->
+      <div v-if="activeTab === 'inventory'" class="space-y-6">
+        <div v-if="isManagement" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
+          <h2 class="text-lg font-bold text-white mb-4">เพิ่มไอเทมเข้าคลังแก๊ง</h2>
+          <form @submit.prevent="handleAddInventory" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">ชื่อไอเทม</label>
+              <input v-model="itemForm.name" type="text" placeholder="เช่น AED PainKiller, เกราะ" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">หมวดหมู่</label>
+              <input v-model="itemForm.category" type="text" placeholder="เช่น  ยา, ทั่วไป" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">จำนวนเริ่มต้น</label>
+              <input v-model.number="itemForm.quantity" type="number" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">รูปไอเทม (ถ้ามี)</label>
+              <input 
+                type="file" 
+                accept="image/*" 
+                @change="handleItemFileSelect" 
+                class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-300 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-slate-800 file:text-slate-200 cursor-pointer" 
+              />
+            </div>
+
+            <div class="flex items-end">
+              <button 
+                type="submit" 
+                :disabled="isUploadingItem"
+                class="w-full bg-red-600 hover:bg-red-700 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-sm transition cursor-pointer shadow-lg shadow-red-600/20"
+              >
+                <span v-if="isUploadingItem">กำลังบันทึก...</span>
+                <span v-else>เพิ่มเข้าคลัง</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div v-else class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-4 shadow-xl flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">📦</span>
+            <div>
+              <h3 class="font-bold text-white text-sm">คลังไอเทมแก๊ง</h3>
+              <p class="text-xs text-slate-400">คุณสามารถตรวจสอบจำนวนไอเทมในคลังได้ (หากต้องการเพิ่ม/ขอเบิกของ กรุณายื่นคำร้อง)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div v-for="item in getArray(store.inventory)" :key="item.id" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl flex flex-col justify-between hover:border-red-500/50 transition duration-300">
+            <div class="relative h-40 bg-slate-950 flex items-center justify-center border-b border-slate-800/80 overflow-hidden group">
+              <img 
+                v-if="item.image_url" 
+                :src="item.image_url" 
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-300" 
+              />
+              <div v-else class="text-4xl text-slate-700 select-none">
+                📦
+              </div>
+              <span class="absolute top-2 left-2 text-[10px] bg-slate-900/80 backdrop-blur text-slate-300 px-2 py-0.5 rounded border border-slate-700/80 uppercase font-bold">
+                {{ item.category }}
+              </span>
+            </div>
+
+            <div class="p-4">
+              <h3 class="font-bold text-base text-white truncate">{{ item.item_name }}</h3>
+              <p class="text-2xl font-mono font-black text-red-500 my-1">
+                {{ Number(item.quantity).toLocaleString() }} <span class="text-xs text-slate-500 font-normal">ชิ้น</span>
+              </p>
+
+              <div v-if="isManagement" class="flex items-center gap-2 pt-3 mt-2 border-t border-slate-800/80">
+                <button @click="store.updateInventoryQty(item.id, item.quantity - 1)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded font-bold text-sm cursor-pointer">-</button>
+                <button @click="store.updateInventoryQty(item.id, item.quantity + 1)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded font-bold text-sm cursor-pointer">+</button>
+                <button @click="store.deleteInventoryItem(item.id)" class="ml-auto text-xs text-red-400 hover:underline cursor-pointer">ลบ</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: คำร้องสมาชิก -->
+      <div v-if="activeTab === 'tickets'" class="space-y-6">
+        <div v-if="!isManagement" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
+          <h2 class="text-lg font-bold text-white mb-4">ยื่นคำร้องใหม่ถึงหัวหน้าแก๊ง</h2>
+          <form @submit.prevent="handleTicket" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">หัวข้อคำร้อง</label>
+                <input v-model="ticketForm.title" type="text" placeholder="เช่น ขอเบิกเงินตีอาวุธ, ขอลาหยุด" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">หมวดหมู่</label>
+                <select v-model="ticketForm.category" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500">
+                  <option value="เบิกของ/เงิน">เบิกของ / เบิกเงิน</option>
+                  <option value="ลาหยุด">แจ้งลาหยุด</option>
+                  <option value="ร้องเรียน/เรื่องอื่นๆ">ร้องเรียน / เรื่องอื่นๆ</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">รายละเอียด</label>
+              <textarea v-model="ticketForm.detail" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-red-500"></textarea>
+            </div>
+            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-medium px-6 py-2 rounded-lg text-sm transition cursor-pointer shadow-lg shadow-red-600/20">
+              ส่งคำร้อง
+            </button>
+          </form>
+        </div>
+
+        <div v-else class="bg-slate-900/90 backdrop-blur border border-red-500/30 rounded-xl p-4 shadow-xl flex items-center gap-3">
+          <span class="text-2xl">📋</span>
+          <div>
+            <h3 class="font-bold text-white text-sm">การจัดการคำร้องของสมาชิก (สำหรับหัวหน้า/รอง)</h3>
+            <p class="text-xs text-slate-400">คุณอยู่ในสถานะผู้ตรวจสอบ กรุณาพิจารณาและอนุมัติคำร้องจากรายการด้านล่างนี้</p>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+          <div class="p-4 border-b border-slate-800 font-bold text-white flex justify-between items-center bg-slate-900/50">
+            <span>รายการคำร้องทั้งหมด</span>
+            <span v-if="isManagement" class="text-xs font-normal text-amber-400">
+              รออนุมัติ: {{ getArray(store.tickets).filter(t => t.status === 'pending').length }} รายการ
+            </span>
+          </div>
+          <div class="divide-y divide-slate-800/80">
+            <div v-for="ticket in getArray(store.tickets)" :key="ticket.id" class="p-5 space-y-2">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700 mr-2">{{ ticket.category }}</span>
+                  <h3 class="font-bold text-white inline-block">{{ ticket.title }}</h3>
+                  <p class="text-xs text-slate-500 mt-1">ผู้ยื่น: {{ ticket.profiles?.character_name || 'สมาชิก' }} • {{ new Date(ticket.created_at).toLocaleString() }}</p>
+                </div>
+                <span :class="getTicketBadge(ticket.status)" class="px-2.5 py-1 rounded-full text-xs font-semibold">
+                  {{ getTicketStatusText(ticket.status) }}
+                </span>
+              </div>
+              <p class="text-sm text-slate-300 bg-slate-950/80 p-3 rounded-lg border border-slate-800/50">{{ ticket.detail }}</p>
+              
+              <div v-if="isManagement" class="flex gap-2 pt-2">
+                <button @click="store.updateTicketStatus(ticket.id, 'approved')" class="bg-green-600 hover:bg-green-700 text-white text-xs px-4 py-1.5 rounded font-medium cursor-pointer">อนุมัติคำร้อง</button>
+                <button @click="store.updateTicketStatus(ticket.id, 'rejected')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-1.5 rounded cursor-pointer">ไม่อนุมัติ</button>
+              </div>
+            </div>
+            <div v-if="getArray(store.tickets).length === 0" class="p-8 text-center text-slate-500 text-sm">
+              ไม่มีคำร้องในขณะนี้
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, unref } from 'vue'
+
+const store = useGangStore()
+const client = useSupabaseClient()
+const router = useRouter()
+
+const getVal = (target) => unref(target)
+const getArray = (target) => unref(target) || []
+
+// เก็บข้อมูล Local User State
+const loggedUser = ref(null)
+
+onMounted(async () => {
+  // ดึงข้อมูล Session จาก LocalStorage
+  if (process.client) {
+    const savedSession = localStorage.getItem('gang_user_session')
+    if (savedSession) {
+      try {
+        loggedUser.value = JSON.parse(savedSession)
+      } catch (e) {
+        console.error('Failed to parse session:', e)
+      }
+    } else {
+      // ถ้าไม่มี Session ส่งกลับหน้า Login
+      router.push('/login')
+      return
+    }
+  }
+
+  if (store.fetchAllData) {
+    await store.fetchAllData()
+  }
+})
+
+const handleLogout = async () => {
+  if (process.client) {
+    localStorage.removeItem('gang_user_session')
+  }
+  await client.auth.signOut()
+  router.push('/login')
+}
+
+const activeTab = ref('members')
+
+// ค้นหา Profile ปัจจุบันจาก Local Session หรือ profiles ทั้งหมด
+const currentUserProfile = computed(() => {
+  if (!loggedUser.value) return null
+  const profiles = getArray(store.profiles)
+  const found = profiles.find(p => p.id === loggedUser.value.id || p.character_name === loggedUser.value.character_name)
+  return found || loggedUser.value
+})
+
+const currentUserRole = computed(() => {
+  return currentUserProfile.value?.role || 'member'
+})
+
+const isLeader = computed(() => currentUserRole.value === 'leader')
+const isManagement = computed(() => currentUserRole.value === 'leader' || currentUserRole.value === 'co_leader')
+
+const pendingCheckins = computed(() => {
+  const checkins = getArray(store.checkins)
+  return checkins.filter(c => c.status === 'pending')
+})
+
+const tabs = computed(() => [
+  { id: 'members', label: 'สมาชิก & เช็คชื่อ', badge: pendingCheckins.value.length },
+  { id: 'treasury', label: 'คลังเงินแก๊ง' },
+  { id: 'inventory', label: 'คลังของแก๊ง' },
+  { id: 'tickets', label: 'คำร้องสมาชิก' }
+])
+
+const checkinSelectedFile = ref(null)
+const checkinImagePreview = ref(null)
+const isUploadingCheckin = ref(false)
+
+const itemSelectedFile = ref(null)
+const isUploadingItem = ref(false)
+
+const checkinForm = ref({ type: 'in' })
+const treasuryForm = ref({ type: 'deposit', amount: 1000, description: '' })
+const itemForm = ref({ name: '', category: 'ทั่วไป', quantity: 1 })
+const ticketForm = ref({ title: '', category: 'เบิกของ/เงิน', detail: '' })
+
+const handleCheckinFileSelect = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    checkinSelectedFile.value = file
+    checkinImagePreview.value = URL.createObjectURL(file)
+  }
+}
+
+const handleItemFileSelect = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    itemSelectedFile.value = file
+  }
+}
+
+const getCurrentUserId = () => {
+  return currentUserProfile.value?.id || null
+}
+
+const handleCheckin = async () => {
+  const userId = getCurrentUserId()
+  if (!userId) return alert('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง')
+  if (!checkinSelectedFile.value) return alert('กรุณาเลือกไฟล์รูปภาพหลักฐานก่อนครับ')
+
+  isUploadingCheckin.value = true
+  const success = await store.submitCheckin(userId, checkinForm.value.type, checkinSelectedFile.value)
+  isUploadingCheckin.value = false
+
+  if (success) {
+    checkinSelectedFile.value = null
+    checkinImagePreview.value = null
+    alert('ส่งหลักฐานเช็คชื่อเรียบร้อยแล้ว รอหัวหน้าอนุมัติครับ!')
+  } else {
+    alert('เกิดข้อผิดพลาดในการอัปโหลดรูปภาพหรือส่งหลักฐาน')
+  }
+}
+
+const handleDeleteMember = async (member) => {
+  const confirmDelete = confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบ "${member.character_name}" ออกจากแก๊ง?`)
+  if (confirmDelete) {
+    const success = await store.deleteMember(member.id)
+    if (success) {
+      alert(`ลบสมาชิก "${member.character_name}" ออกเรียบร้อยแล้ว`)
+    } else {
+      alert('เกิดข้อผิดพลาดในการลบสมาชิก')
+    }
+  }
+}
+
+const handleTreasury = async () => {
+  await store.addTreasuryTransaction(treasuryForm.value.type, treasuryForm.value.amount, treasuryForm.value.description, currentUserProfile.value?.character_name || 'หัวหน้าแก๊ง')
+  treasuryForm.value.description = ''
+  alert('บันทึกรายการคลังเงินเรียบร้อย!')
+}
+
+const handleAddInventory = async () => {
+  if (!isManagement.value) {
+    return alert('เฉพาะหัวหน้าแก๊งและรองหัวหน้าแก๊งเท่านั้นที่สามารถเพิ่มของเข้าคลังได้')
+  }
+  
+  isUploadingItem.value = true
+  const success = await store.addInventoryItem(itemForm.value.name, itemForm.value.category, itemForm.value.quantity, itemSelectedFile.value)
+  isUploadingItem.value = false
+
+  if (success) {
+    itemForm.value.name = ''
+    itemForm.value.category = 'ทั่วไป'
+    itemForm.value.quantity = 1
+    itemSelectedFile.value = null
+    alert('เพิ่มไอเทมเข้าคลังเรียบร้อย!')
+  } else {
+    alert('เกิดข้อผิดพลาดในการบันทึกไอเทม')
+  }
+}
+
+const handleTicket = async () => {
+  const userId = getCurrentUserId()
+  if (!userId) return alert('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง')
+
+  const success = await store.submitTicket(userId, ticketForm.value.title, ticketForm.value.category, ticketForm.value.detail)
+  if (success) {
+    ticketForm.value.title = ''
+    ticketForm.value.detail = ''
+    alert('ส่งคำร้องเรียบร้อยแล้ว!')
+  } else {
+    alert('เกิดข้อผิดพลาดในการส่งคำร้อง')
+  }
+}
+
+const getRoleBadge = (role) => {
+  if (role === 'leader') return 'bg-red-500/20 text-red-400 border border-red-500/30'
+  if (role === 'co_leader') return 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+  return 'bg-slate-800 text-slate-400 border border-slate-700'
+}
+
+const getRoleName = (role) => {
+  if (role === 'leader') return 'หัวหน้าแก๊ง'
+  if (role === 'co_leader') return 'รองหัวหน้า'
+  return 'สมาชิก'
+}
+
+const getTicketBadge = (status) => {
+  if (status === 'approved') return 'bg-green-500/20 text-green-400'
+  if (status === 'rejected') return 'bg-red-500/20 text-red-400'
+  return 'bg-amber-500/20 text-amber-400'
+}
+
+const getTicketStatusText = (status) => {
+  if (status === 'approved') return 'อนุมัติแล้ว'
+  if (status === 'rejected') return 'ไม่อนุมัติ'
+  return 'รอการตรวจ'
+}
+
+const exportCSV = () => {
+  const profiles = getArray(store.profiles)
+  if (profiles.length === 0) return alert('ไม่มีข้อมูลสมาชิกให้ส่งออก')
+  const headers = 'Character Name,Role,Phone,Status\n'
+  const rows = profiles.map(p => `"${p.character_name}","${p.role}","${p.phone_number || ''}","${p.is_online ? 'Online' : 'Offline'}"`).join('\n')
+  const blob = new Blob([headers + rows], { type: 'text/csv' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = 'gang_members.csv'
+  a.click()
+}
+</script>
