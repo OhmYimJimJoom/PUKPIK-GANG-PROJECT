@@ -3,9 +3,16 @@ import { createClient } from '@supabase/supabase-js'
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   
-  // 1. ใส่ Type Assertion (as string) เพื่อยืนยันว่าเป็น string
-  const supabaseUrl = config.public.supabaseUrl as string
-  const supabaseServiceKey = config.supabaseServiceKey as string
+  // ดึงค่าจาก runtimeConfig หรือ process.env โดยตรงเพื่อป้องกันค่าเป็น undefined
+  const supabaseUrl = (config.public.supabaseUrl || process.env.SUPABASE_URL) as string
+  const supabaseServiceKey = (config.supabaseServiceKey || process.env.SUPABASE_SERVICE_KEY) as string
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return {
+      success: false,
+      error: 'Supabase URL or Service Key is missing in Environment Variables.'
+    }
+  }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
@@ -13,12 +20,13 @@ export default defineEventHandler(async (event) => {
     const today = new Date().toISOString().split('T')[0]
 
     // 1. ดึงสมาชิกทั้งหมดที่ไม่ใช่ Leader และไม่ได้ตั้งสถานะลาหยุด
-    const { data: members } = await supabase
+    const { data: members, error: memberErr } = await supabase
       .from('profiles')
       .select('*')
       .neq('role', 'leader')
       .or('leave_status.is.null,leave_status.eq.false')
 
+    if (memberErr) throw memberErr
     if (!members) return { success: true, count: 0 }
 
     // 2. ดึงรายการเช็คชื่อประจำวันของวันนี้
@@ -76,7 +84,6 @@ export default defineEventHandler(async (event) => {
 
     return { success: true, fined_members: finedCount }
   } catch (error: any) {
-    // 2. ระบุประเภทของ error เป็น any หรือแปลงเป็น Error object เพื่อให้ดึง message ได้
     console.error('Auto fine error:', error)
     return { success: false, error: error?.message || 'Internal Server Error' }
   }
