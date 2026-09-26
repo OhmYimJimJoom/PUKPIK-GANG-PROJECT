@@ -1,20 +1,24 @@
 import { createClient } from '@supabase/supabase-js'
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig(event)
   
-  // ดึงค่าจาก runtimeConfig หรือ process.env โดยตรงเพื่อป้องกันค่าเป็น undefined
-  const supabaseUrl = (config.public.supabaseUrl || process.env.SUPABASE_URL) as string
-  const supabaseServiceKey = (config.supabaseServiceKey || process.env.SUPABASE_SERVICE_KEY) as string
+  // ดึงค่า Supabase Credentials ผ่าน RuntimeConfig ของ Nuxt
+  const supabaseUrl = (config.public.supabaseUrl || config.public.supabase?.url) as string
+  const supabaseServiceKey = (config.supabaseServiceKey || config.supabase?.serviceKey) as string
 
-  if (!supabaseUrl || !supabaseServiceKey) {
+  // ถ้าต้องการ Fallback แบบไม่มี TypeScript Error ให้ดึงผ่าน globalThis หรือ event context
+  const envUrl = supabaseUrl || (globalThis as any).process?.env?.SUPABASE_URL || (globalThis as any).process?.env?.NUXT_PUBLIC_SUPABASE_URL
+  const envKey = supabaseServiceKey || (globalThis as any).process?.env?.SUPABASE_SERVICE_KEY || (globalThis as any).process?.env?.NUXT_SUPABASE_SERVICE_KEY
+
+  if (!envUrl || !envKey) {
     return {
       success: false,
-      error: 'Supabase URL or Service Key is missing in Environment Variables.'
+      error: `Missing Supabase Credentials. (URL: ${!!envUrl}, Key: ${!!envKey})`
     }
   }
 
-  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const supabase = createClient(envUrl, envKey)
 
   try {
     const today = new Date().toISOString().split('T')[0]
@@ -64,13 +68,11 @@ export default defineEventHandler(async (event) => {
       }
 
       if (penalty > 0) {
-        // อัปเดตยอดหนี้สะสม
         await supabase
           .from('profiles')
           .update({ fine_balance: (member.fine_balance || 0) + penalty })
           .eq('id', member.id)
 
-        // เพิ่มประวัติใน fine_logs
         await supabase.from('fine_logs').insert({
           user_id: member.id,
           amount: penalty,
