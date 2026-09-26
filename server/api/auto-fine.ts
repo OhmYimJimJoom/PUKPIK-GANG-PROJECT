@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const supabaseUrl = (config.public.supabaseUrl || config.public.supabase?.url) as string
   const supabaseServiceKey = (config.supabaseServiceKey || config.supabase?.serviceKey) as string
 
-  // ถ้าต้องการ Fallback แบบไม่มี TypeScript Error ให้ดึงผ่าน globalThis หรือ event context
+  // Fallback ดึงค่า Env ป้องกัน Error
   const envUrl = supabaseUrl || (globalThis as any).process?.env?.SUPABASE_URL || (globalThis as any).process?.env?.NUXT_PUBLIC_SUPABASE_URL
   const envKey = supabaseServiceKey || (globalThis as any).process?.env?.SUPABASE_SERVICE_KEY || (globalThis as any).process?.env?.NUXT_SUPABASE_SERVICE_KEY
 
@@ -23,11 +23,10 @@ export default defineEventHandler(async (event) => {
   try {
     const today = new Date().toISOString().split('T')[0]
 
-    // 1. ดึงสมาชิกทั้งหมดที่ไม่ใช่ Leader และไม่ได้ตั้งสถานะลาหยุด
+    // 1. ดึงสมาชิกทั้งหมด (รวม Leader) ที่ไม่ได้ตั้งสถานะลาหยุด
     const { data: members, error: memberErr } = await supabase
       .from('profiles')
       .select('*')
-      .neq('role', 'leader')
       .or('leave_status.is.null,leave_status.eq.false')
 
     if (memberErr) throw memberErr
