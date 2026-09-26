@@ -2,28 +2,24 @@
   <!-- Container หลักพร้อมพื้นหลังดาร์คโทน -->
   <div class="min-h-screen bg-slate-950 text-slate-100 font-sans pb-12 relative overflow-hidden">
     
-    <!-- Background Image Placeholders (กรอบรางๆ สำหรับเตรียมใส่รูปภาพในอนาคต) -->
+    <!-- Background Image Placeholders -->
     <div class="fixed top-[-5%] left-[-5%] w-[500px] h-[500px] bg-cover bg-center rounded-3xl pointer-events-none rotate-12 backdrop-blur-xs opacity-30 border border-slate-700/50" style="background-image: url('/img/image.png');"></div>
-
-<div class="fixed top-[20%] right-[-5%] w-[600px] h-[600px] bg-cover bg-center rounded-3xl pointer-events-none -rotate-6 backdrop-blur-xs opacity-30 border border-slate-700/50" style="background-image: url('/img/541F17CF-F73E-4E4C-A209-D750B423A3F1.png');"></div>
-
-<div class="fixed bottom-[-10%] left-[15%] w-[500px] h-[500px] bg-cover bg-center rounded-3xl pointer-events-none rotate-4 backdrop-blur-xs opacity-30 border border-slate-700/50" style="background-image: url('/img/image1.png');"></div>
-
-
+    <div class="fixed top-[20%] right-[-5%] w-[600px] h-[600px] bg-cover bg-center rounded-3xl pointer-events-none -rotate-6 backdrop-blur-xs opacity-30 border border-slate-700/50" style="background-image: url('/img/541F17CF-F73E-4E4C-A209-D750B423A3F1.png');"></div>
+    <div class="fixed bottom-[-10%] left-[15%] w-[500px] h-[500px] bg-cover bg-center rounded-3xl pointer-events-none rotate-4 backdrop-blur-xs opacity-30 border border-slate-700/50" style="background-image: url('/img/image1.png');"></div>
 
     <!-- Header & Profile Bar & Logout -->
     <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex items-center space-x-3">
-         <div 
-  class="w-20 h-20 rounded-lg shadow-lg shadow-red-600/40 border border-red-500/50 bg-cover bg-center shrink-0" 
-  style="background-image: url('/img/541F17CF-F73E-4E4C-A209-D750B423A3F1.png');"
-></div>
+          <div 
+            class="w-20 h-20 rounded-lg shadow-lg shadow-red-600/40 border border-red-500/50 bg-cover bg-center shrink-0" 
+            style="background-image: url('/img/541F17CF-F73E-4E4C-A209-D750B423A3F1.png');"
+          ></div>
           <div>
             <h1 class="text-xl font-bold tracking-wider text-white flex items-center gap-2">
-              PUKPIK GANG
+              PUKPIK GANG SYSTEM
             </h1>
-            
+            <p class="text-xs text-slate-400">ระบบจัดการแก๊งแบบครบวงจร</p>
           </div>
         </div>
 
@@ -32,9 +28,12 @@
           <div class="flex items-center gap-3 bg-slate-950/80 px-3 py-1.5 rounded-lg border border-slate-800 backdrop-blur">
             <div class="text-right">
               <p class="text-xs font-bold text-white">{{ currentUserProfile?.character_name || 'ไม่พบข้อมูลผู้ใช้' }}</p>
-              <div class="text-[10px] text-slate-400 mt-0.5">
+              <div class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1.5 justify-end">
                 <span :class="getRoleBadge(currentUserRole)" class="px-1.5 py-0.5 rounded font-semibold text-[10px]">
                   {{ getRoleName(currentUserRole) }}
+                </span>
+                <span v-if="currentUserProfile?.leave_status" class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded font-semibold text-[10px]">
+                  🌴 ลาหยุด
                 </span>
               </div>
             </div>
@@ -72,49 +71,119 @@
 
       <!-- Tab 1: รายชื่อสมาชิก & การเช็คชื่อ -->
       <div v-if="activeTab === 'members'" class="space-y-6">
-        <!-- ฟอร์มเช็คชื่อ -->
-        <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
-          <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <span class="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
-            เช็คชื่อเข้า-ออกเมือง
-          </h2>
-          <form @submit.prevent="handleCheckin" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">ประเภท</label>
-              <select v-model="checkinForm.type" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500">
-                <option value="in">เข้าเมือง (Check-In)</option>
-                <option value="out">ออกเมือง (Check-Out)</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">เลือกรูปภาพหลักฐานจากเครื่อง</label>
-              <input 
-                type="file" 
-                accept="image/*" 
-                @change="handleCheckinFileSelect" 
-                required 
-                class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-slate-300 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 cursor-pointer" 
-              />
-            </div>
-            <div class="flex items-end">
-              <button 
-                type="submit" 
-                :disabled="isUploadingCheckin"
-                class="w-full bg-red-600 hover:bg-red-700 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-sm transition flex justify-center items-center gap-2 cursor-pointer shadow-lg shadow-red-600/20"
-              >
-                <span v-if="isUploadingCheckin">กำลังอัปโหลด...</span>
-                <span v-else>ส่งหลักฐานเช็คชื่อ</span>
-              </button>
-            </div>
-          </form>
+        <!-- 1.1 สวิตช์สลับสถานะแจ้งลาหยุดประจำวัน -->
+        <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
+          <div>
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              🌴 แจ้งลาหยุดประจำวัน
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">ต้องระบุสาเหตุ และรอการอนุมัติจากหัวหน้า/รองหัวหน้าแก๊งก่อน จึงจะเว้นเว้นค่าปรับเช็คชื่อ</p>
+          </div>
+          
+          <button 
+            v-if="currentUserProfile?.leave_status"
+            @click="handleCancelLeave"
+            class="px-4 py-2 rounded-lg text-xs font-bold transition bg-amber-600 hover:bg-amber-700 text-white border border-amber-500 cursor-pointer shadow-md shrink-0"
+          >
+            ✅ กำลังลาหยุดพัก (กดเพื่อยกเลิกการลา)
+          </button>
+          
+          <button 
+            v-else
+            @click="showLeaveModal = true"
+            class="px-4 py-2 rounded-lg text-xs font-bold transition bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 cursor-pointer shadow-md shrink-0"
+          >
+            ✈️ ยื่นเรื่องขอลาหยุดวันนี้
+          </button>
+        </div>
 
-          <div v-if="checkinImagePreview" class="mt-4">
-            <p class="text-xs text-slate-400 mb-2">ตัวอย่างรูปเช็คชื่อ:</p>
-            <img :src="checkinImagePreview" class="h-32 rounded-lg border border-slate-800 object-cover" />
+        <!-- คิวรออนุมัติคำขอลา (เฉพาะ หัวหน้า / รองหัวหน้า) -->
+        <div v-if="isManagement && pendingLeaveRequests.length > 0" class="bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl">
+          <h2 class="text-lg font-bold text-amber-400 mb-4">🌴 รายการคำขอลาหยุดรออนุมัติ ({{ pendingLeaveRequests.length }})</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-for="req in pendingLeaveRequests" :key="req.id" class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="font-bold text-white">{{ req.profiles?.character_name || 'สมาชิก' }}</p>
+                  <p class="text-xs text-slate-400 mt-1">เหตุผล: <span class="text-amber-200">{{ req.reason }}</span></p>
+                </div>
+                <span class="text-[10px] text-slate-500">{{ new Date(req.created_at).toLocaleTimeString() }}</span>
+              </div>
+              <div class="flex gap-2 pt-2 border-t border-slate-800">
+                <button @click="store.approveLeaveRequest(req.id, req.user_id, true)" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1.5 rounded font-medium cursor-pointer">อนุมัติลา</button>
+                <button @click="store.approveLeaveRequest(req.id, req.user_id, false)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-1.5 rounded cursor-pointer">ปฏิเสธ</button>
+              </div>
+            </div>
           </div>
         </div>
 
-        <!-- คิวรออนุมัติเช็คชื่อ (เฉพาะ หัวหน้า / รองหัวหน้า) -->
+        <!-- 1.2 ฟอร์มเช็คชื่อแบ่ง 2 ประเภท -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- เช็คชื่อประจำวัน -->
+          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
+            <h2 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
+              1. เช็คชื่อประจำวัน (เดดไลน์ 21:00 น.)
+            </h2>
+            <p class="text-xs text-slate-400 mb-4">*หากขาดเช็คชื่อระบบจะปรับ 100,000 บาท อัตโนมัติ*</p>
+            <form @submit.prevent="handleCheckin('daily')" class="space-y-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">ประเภท</label>
+                <select v-model="dailyForm.type" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-red-500">
+                  <option value="in">เข้าเมือง (Check-In)</option>
+                  <option value="out">ออกเมือง (Check-Out)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">เลือกรูปภาพหลักฐาน</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  @change="e => handleFileSelect(e, 'daily')" 
+                  required 
+                  class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300 file:bg-slate-800 file:text-slate-200 file:border-0 file:rounded file:px-2 file:py-1 cursor-pointer" 
+                />
+              </div>
+              <button 
+                type="submit" 
+                :disabled="isUploadingDaily" 
+                class="w-full bg-red-600 hover:bg-red-700 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-xs transition cursor-pointer shadow-lg shadow-red-600/20"
+              >
+                {{ isUploadingDaily ? 'กำลังอัปโหลด...' : 'ส่งหลักฐานเช็คชื่อวัน' }}
+              </button>
+            </form>
+          </div>
+
+          <!-- เช็คชื่อแอร์ดรอป -->
+          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
+            <h2 class="text-base font-bold text-amber-400 mb-1 flex items-center gap-2">
+              <span class="w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping"></span>
+              2. เช็คชื่อแอร์ดรอป (เดดไลน์ 22:00 น.)
+            </h2>
+            <p class="text-xs text-slate-400 mb-4">*หากขาดเช็คชื่อแอร์ดรอประบบจะปรับ 100,000 บาท อัตโนมัติ*</p>
+            <form @submit.prevent="handleCheckin('airdrop')" class="space-y-3">
+              <div>
+                <label class="block text-xs text-slate-400 mb-1">เลือกรูปภาพหลักฐานร่วมกิจกรรม</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  @change="e => handleFileSelect(e, 'airdrop')" 
+                  required 
+                  class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300 file:bg-slate-800 file:text-slate-200 file:border-0 file:rounded file:px-2 file:py-1 cursor-pointer" 
+                />
+              </div>
+              <button 
+                type="submit" 
+                :disabled="isUploadingAirdrop" 
+                class="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-xs transition cursor-pointer shadow-lg shadow-amber-600/20"
+              >
+                {{ isUploadingAirdrop ? 'กำลังอัปโหลด...' : 'ส่งหลักฐานแอร์ดรอป' }}
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- คิวรออนุมัติเช็คชื่อ -->
         <div v-if="isManagement && pendingCheckins.length > 0" class="bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl">
           <h2 class="text-lg font-bold text-amber-400 mb-4">⏳ รายการเช็คชื่อรออนุมัติ ({{ pendingCheckins.length }})</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -152,6 +221,8 @@
                   <th class="p-4">ชื่อในเมือง</th>
                   <th class="p-4">ตำแหน่ง</th>
                   <th class="p-4">เบอร์โทร</th>
+                  <th class="p-4">สถานะการลา</th>
+                  <th class="p-4">ยอดหนี้สะสม</th>
                   <th class="p-4">สถานะในเมือง</th>
                   <th class="p-4">หลักฐานล่าสุด</th>
                   <th v-if="isManagement" class="p-4 text-center">จัดการ</th>
@@ -167,9 +238,17 @@
                   </td>
                   <td class="p-4 text-slate-400">{{ member.phone_number || '-' }}</td>
                   <td class="p-4">
+                    <span :class="member.leave_status ? 'text-amber-400 font-bold' : 'text-slate-500'">
+                      {{ member.leave_status ? '🌴 ลากิจ' : 'ปกติ' }}
+                    </span>
+                  </td>
+                  <td class="p-4 font-mono font-bold" :class="(member.fine_balance || 0) > 0 ? 'text-red-400' : 'text-green-400'">
+                    ${{ (member.fine_balance || 0).toLocaleString() }}
+                  </td>
+                  <td class="p-4">
                     <span :class="member.is_online ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-slate-800 text-slate-500 border-slate-700'" class="px-2.5 py-1 rounded-full text-xs border flex items-center w-fit gap-1.5">
                       <span class="w-1.5 h-1.5 rounded-full" :class="member.is_online ? 'bg-green-400 animate-pulse' : 'bg-slate-500'"></span>
-                      {{ member.is_online ? 'อยู่ในเมือง (Online)' : 'นอกเมือง (Offline)' }}
+                      {{ member.is_online ? 'อยู่ในเมือง' : 'นอกเมือง' }}
                     </span>
                   </td>
 
@@ -201,7 +280,89 @@
         </div>
       </div>
 
-      <!-- Tab 2: คลังเงินแก๊ง -->
+      <!-- Tab 2: กฎแก๊ง -->
+      <div v-if="activeTab === 'rules'" class="space-y-6">
+        <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
+          <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
+            <div>
+              <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                📜 กฎระเบียบประจำแก๊ง PUKPIK
+              </h2>
+              <p class="text-xs text-slate-400 mt-1">สมาชิกทุกคนต้องรับทราบและปฏิบัติตามอย่างเคร่งครัด</p>
+            </div>
+            <button 
+              v-if="isManagement && !isEditingRules" 
+              @click="isEditingRules = true" 
+              class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-4 py-2 rounded-lg border border-slate-700 cursor-pointer transition"
+            >
+              ✏️ แก้ไขกฎแก๊ง
+            </button>
+          </div>
+
+          <div v-if="isEditingRules" class="space-y-4">
+            <textarea 
+              v-model="rulesInput" 
+              rows="12" 
+              class="w-full bg-slate-950 border border-slate-800 rounded-lg p-4 text-sm text-white focus:outline-none focus:border-red-500 font-mono"
+              placeholder="พิมพ์กฎระเบียบแก๊งที่นี่..."
+            ></textarea>
+            <div class="flex gap-2 justify-end">
+              <button @click="isEditingRules = false" class="bg-slate-800 text-slate-300 text-xs px-4 py-2 rounded-lg cursor-pointer">ยกเลิก</button>
+              <button @click="saveGangRules" class="bg-red-600 hover:bg-red-700 text-white text-xs px-4 py-2 rounded-lg cursor-pointer shadow-lg shadow-red-600/20">บันทึกกฎแก๊ง</button>
+            </div>
+          </div>
+
+          <div v-else class="prose prose-invert max-w-none text-slate-300 leading-relaxed whitespace-pre-line text-sm bg-slate-950/50 p-6 rounded-lg border border-slate-800/80">
+            {{ currentRulesContent || 'ยังไม่มีการกำหนดกฎแก๊งในขณะนี้' }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: โปรไฟล์ & ค่าปรับ -->
+      <div v-if="activeTab === 'profile'" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl flex flex-col items-center text-center">
+            <div class="w-24 h-24 rounded-full bg-slate-800 border-2 border-red-500/50 flex items-center justify-center text-4xl mb-4 shadow-lg shadow-red-500/10">
+              👤
+            </div>
+            <h2 class="text-xl font-bold text-white">{{ currentUserProfile?.character_name }}</h2>
+            <p class="text-xs text-slate-400 mt-1">ตำแหน่ง: {{ getRoleName(currentUserRole) }}</p>
+            <p class="text-xs text-slate-400">เบอร์โทร: {{ currentUserProfile?.phone_number || '-' }}</p>
+          </div>
+
+          <div class="md:col-span-2 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl flex flex-col justify-between">
+            <div>
+              <p class="text-xs text-slate-400 mb-1">ยอดเงินโดนปรับ/ค้างชำระทั้งหมด (Fine Balance)</p>
+              <p class="text-4xl font-black font-mono" :class="(currentUserProfile?.fine_balance || 0) > 0 ? 'text-red-500' : 'text-green-400'">
+                ${{ (currentUserProfile?.fine_balance || 0).toLocaleString() }}
+              </p>
+            </div>
+            <div class="mt-4 p-4 bg-slate-950/80 rounded-lg border border-slate-800 text-xs text-slate-400">
+              ℹ️ หากต้องการชำระค่าปรับ กรุณาโอนเงินเข้าคลังแก๊งแล้วแจ้งหัวหน้าแก๊งเพื่อตัดยอดหนี้สินออก
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+          <div class="p-4 border-b border-slate-800 font-bold text-white bg-slate-900/50">ประวัติค่าปรับและการชำระเงินส่วนตัว</div>
+          <div class="divide-y divide-slate-800/80">
+            <div v-for="log in myFineLogs" :key="log.id" class="p-4 flex justify-between items-center hover:bg-slate-800/30 transition">
+              <div>
+                <p class="font-medium text-white text-sm">{{ log.reason }}</p>
+                <p class="text-xs text-slate-500">{{ new Date(log.created_at).toLocaleString() }}</p>
+              </div>
+              <p :class="log.type === 'fine' ? 'text-red-400' : 'text-green-400'" class="font-mono font-bold text-base">
+                {{ log.type === 'fine' ? '+' : '-' }}${{ Number(log.amount).toLocaleString() }}
+              </p>
+            </div>
+            <div v-if="myFineLogs.length === 0" class="p-8 text-center text-slate-500 text-sm">
+              ไม่มีประวัติโดนปรับเงิน 🎉
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: คลังเงินแก๊ง -->
       <div v-if="activeTab === 'treasury'" class="space-y-6">
         <div class="bg-gradient-to-r from-slate-900/90 via-slate-900/90 to-red-950/80 border border-slate-800 rounded-xl p-6 shadow-xl flex justify-between items-center backdrop-blur">
           <div>
@@ -255,7 +416,7 @@
         </div>
       </div>
 
-      <!-- Tab 3: คลังของแก๊ง -->
+      <!-- Tab 5: คลังของแก๊ง -->
       <div v-if="activeTab === 'inventory'" class="space-y-6">
         <div v-if="isManagement" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
           <h2 class="text-lg font-bold text-white mb-4">เพิ่มไอเทมเข้าคลังแก๊ง</h2>
@@ -266,7 +427,7 @@
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">หมวดหมู่</label>
-              <input v-model="itemForm.category" type="text" placeholder="เช่น  ยา, ทั่วไป" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
+              <input v-model="itemForm.category" type="text" placeholder="เช่น ยา, ทั่วไป" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
             </div>
             <div>
               <label class="block text-xs text-slate-400 mb-1">จำนวนเริ่มต้น</label>
@@ -338,7 +499,7 @@
         </div>
       </div>
 
-      <!-- Tab 4: คำร้องสมาชิก -->
+      <!-- Tab 6: คำร้องสมาชิก -->
       <div v-if="activeTab === 'tickets'" class="space-y-6">
         <div v-if="!isManagement" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
           <h2 class="text-lg font-bold text-white mb-4">ยื่นคำร้องใหม่ถึงหัวหน้าแก๊ง</h2>
@@ -346,14 +507,13 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs text-slate-400 mb-1">หัวข้อคำร้อง</label>
-                <input v-model="ticketForm.title" type="text" placeholder="เช่น ขอเบิกเงินตีอาวุธ, ขอลาหยุด" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
+                <input v-model="ticketForm.title" type="text" placeholder="เช่น ขอเบิกเงินตีอาวุธ" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
               </div>
               <div>
                 <label class="block text-xs text-slate-400 mb-1">หมวดหมู่</label>
                 <select v-model="ticketForm.category" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500">
                   <option value="เบิกของ/เงิน">เบิกของ / เบิกเงิน</option>
-                  <option value="ลาหยุด">แจ้งลาหยุด</option>
-                  <option value="ร้องเรียน/เรื่องอื่นๆ">ร้องเรียน / เรื่องอื่นๆ</option>
+                  <option value="เรื่องอื่นๆ">เรื่องอื่นๆ</option>
                 </select>
               </div>
             </div>
@@ -408,6 +568,32 @@
         </div>
       </div>
     </main>
+
+    <!-- Modal ป๊อปอัพ ยื่นคำขอลาหยุด -->
+    <div v-if="showLeaveModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-xl p-6 space-y-4 shadow-2xl">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+          🌴 ยื่นเรื่องขอลาหยุด
+        </h3>
+        <p class="text-xs text-slate-400">กรุณาระบุสาเหตุการลา คำขอจะส่งไปยังหัวหน้า/รองหัวหน้าแก๊งเพื่อพิจารณาอนุมัติ</p>
+        
+        <div>
+          <label class="block text-xs text-slate-300 mb-1">สาเหตุการลา</label>
+          <textarea 
+            v-model="leaveReason" 
+            rows="3" 
+            placeholder="เช่น ติดภารกิจต่างจังหวัด, ไม่สบาย" 
+            class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-red-500"
+          ></textarea>
+        </div>
+
+        <div class="flex gap-2 justify-end pt-2">
+          <button @click="showLeaveModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-lg cursor-pointer">ยกเลิก</button>
+          <button @click="handleLeaveSubmit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-amber-600/20">ยื่นคำขอลา</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -421,11 +607,38 @@ const router = useRouter()
 const getVal = (target) => unref(target)
 const getArray = (target) => unref(target) || []
 
-// เก็บข้อมูล Local User State
+// Local State
 const loggedUser = ref(null)
+const activeTab = ref('members')
+
+// State การลา
+const showLeaveModal = ref(false)
+const leaveReason = ref('')
+
+// State กฎแก๊ง
+const isEditingRules = ref(false)
+const rulesInput = ref('')
+const currentRulesContent = ref('')
+
+// State ประวัติค่าปรับส่วนตัว
+const myFineLogs = ref([])
+
+// State ไฟล์อัปโหลดเช็คชื่อ
+const dailyFile = ref(null)
+const airdropFile = ref(null)
+
+const isUploadingDaily = ref(false)
+const isUploadingAirdrop = ref(false)
+const isUploadingItem = ref(false)
+
+const dailyForm = ref({ type: 'in' })
+const itemSelectedFile = ref(null)
+
+const treasuryForm = ref({ type: 'deposit', amount: 1000, description: '' })
+const itemForm = ref({ name: '', category: 'ทั่วไป', quantity: 1 })
+const ticketForm = ref({ title: '', category: 'เบิกของ/เงิน', detail: '' })
 
 onMounted(async () => {
-  // ดึงข้อมูล Session จาก LocalStorage
   if (process.client) {
     const savedSession = localStorage.getItem('gang_user_session')
     if (savedSession) {
@@ -435,7 +648,6 @@ onMounted(async () => {
         console.error('Failed to parse session:', e)
       }
     } else {
-      // ถ้าไม่มี Session ส่งกลับหน้า Login
       router.push('/login')
       return
     }
@@ -444,6 +656,9 @@ onMounted(async () => {
   if (store.fetchAllData) {
     await store.fetchAllData()
   }
+
+  await fetchGangRules()
+  await fetchMyFineLogs()
 })
 
 const handleLogout = async () => {
@@ -454,9 +669,6 @@ const handleLogout = async () => {
   router.push('/login')
 }
 
-const activeTab = ref('members')
-
-// ค้นหา Profile ปัจจุบันจาก Local Session หรือ profiles ทั้งหมด
 const currentUserProfile = computed(() => {
   if (!loggedUser.value) return null
   const profiles = getArray(store.profiles)
@@ -464,10 +676,7 @@ const currentUserProfile = computed(() => {
   return found || loggedUser.value
 })
 
-const currentUserRole = computed(() => {
-  return currentUserProfile.value?.role || 'member'
-})
-
+const currentUserRole = computed(() => currentUserProfile.value?.role || 'member')
 const isLeader = computed(() => currentUserRole.value === 'leader')
 const isManagement = computed(() => currentUserRole.value === 'leader' || currentUserRole.value === 'co_leader')
 
@@ -476,71 +685,134 @@ const pendingCheckins = computed(() => {
   return checkins.filter(c => c.status === 'pending')
 })
 
+const pendingLeaveRequests = computed(() => {
+  const requests = getArray(store.leaveRequests)
+  return requests.filter(r => r.status === 'pending')
+})
+
 const tabs = computed(() => [
-  { id: 'members', label: 'สมาชิก & เช็คชื่อ', badge: pendingCheckins.value.length },
+  { id: 'members', label: 'สมาชิก & เช็คชื่อ', badge: pendingCheckins.value.length + (isManagement.value ? pendingLeaveRequests.value.length : 0) },
+  { id: 'rules', label: '📜 กฎแก๊ง PUKPIK' },
+  { id: 'profile', label: '👤 โปรไฟล์ & ค่าปรับ' },
   { id: 'treasury', label: 'คลังเงินแก๊ง' },
   { id: 'inventory', label: 'คลังของแก๊ง' },
   { id: 'tickets', label: 'คำร้องสมาชิก' }
 ])
 
-const checkinSelectedFile = ref(null)
-const checkinImagePreview = ref(null)
-const isUploadingCheckin = ref(false)
+// ระบบยื่นขอลาหยุด
+const handleLeaveSubmit = async () => {
+  if (!leaveReason.value.trim()) return alert('กรุณาระบุสาเหตุการลาหยุดด้วยครับ')
+  const userId = currentUserProfile.value?.id
+  if (!userId) return alert('ไม่พบข้อมูลผู้ใช้')
 
-const itemSelectedFile = ref(null)
-const isUploadingItem = ref(false)
+  const success = await store.submitLeaveRequest(userId, leaveReason.value.trim())
+  if (success) {
+    alert('ส่งคำขอลาหยุดเรียบร้อยแล้ว! กรุณารอหัวหน้าหรือรองหัวหน้าอนุมัติ')
+    showLeaveModal.value = false
+    leaveReason.value = ''
+  } else {
+    alert('เกิดข้อผิดพลาดในการส่งคำขอลาหยุด')
+  }
+}
 
-const checkinForm = ref({ type: 'in' })
-const treasuryForm = ref({ type: 'deposit', amount: 1000, description: '' })
-const itemForm = ref({ name: '', category: 'ทั่วไป', quantity: 1 })
-const ticketForm = ref({ title: '', category: 'เบิกของ/เงิน', detail: '' })
+// ระบบยกเลิกการลาหยุด
+const handleCancelLeave = async () => {
+  if (confirm('คุณต้องการยกเลิกสถานะลาหยุดและกลับมาทำกิจกรรมแก๊งตามปกติหรือไม่?')) {
+    const success = await store.cancelLeave(currentUserProfile.value?.id)
+    if (success) alert('ยกเลิกการลาหยุดเรียบร้อยแล้ว')
+  }
+}
 
-const handleCheckinFileSelect = (event) => {
+const handleFileSelect = (event, mode) => {
   const file = event.target.files[0]
-  if (file) {
-    checkinSelectedFile.value = file
-    checkinImagePreview.value = URL.createObjectURL(file)
+  if (mode === 'daily') dailyFile.value = file
+  if (mode === 'airdrop') airdropFile.value = file
+}
+
+const handleCheckin = async (mode) => {
+  const userId = currentUserProfile.value?.id
+  if (!userId) return alert('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง')
+
+  if (mode === 'daily') {
+    if (!dailyFile.value) return alert('กรุณาเลือกรูปหลักฐานเช็คชื่อวันก่อนครับ')
+    isUploadingDaily.value = true
+    const success = await store.submitCheckin(userId, dailyForm.value.type, dailyFile.value)
+    isUploadingDaily.value = false
+    if (success) alert('ส่งหลักฐานเช็คชื่อวันเรียบร้อยแล้ว!')
+    else alert('เกิดข้อผิดพลาดในการส่งหลักฐาน')
+  } else if (mode === 'airdrop') {
+    if (!airdropFile.value) return alert('กรุณาเลือกรูปหลักฐานแอร์ดรอปก่อนครับ')
+    isUploadingAirdrop.value = true
+    try {
+      const fileName = `airdrop_${userId}_${Date.now()}.png`
+      const { data: uploadData, error: uploadErr } = await client.storage.from('checkins').upload(fileName, airdropFile.value)
+      if (uploadErr) throw uploadErr
+
+      const publicUrl = client.storage.from('checkins').getPublicUrl(fileName).data.publicUrl
+      const { error: insertErr } = await client.from('airdrop_checkins').insert({
+        user_id: userId,
+        image_url: publicUrl
+      })
+
+      if (insertErr) throw insertErr
+      alert('ส่งหลักฐานเข้าร่วมแอร์ดรอปเรียบร้อยแล้ว!')
+    } catch (e) {
+      console.error(e)
+      alert('เกิดข้อผิดพลาดในการอัปโหลดหลักฐานแอร์ดรอป')
+    } finally {
+      isUploadingAirdrop.value = false
+    }
+  }
+}
+
+const fetchGangRules = async () => {
+  try {
+    const { data } = await client.from('gang_rules').select('*').order('id', { ascending: false }).limit(1)
+    if (data && data.length > 0) {
+      currentRulesContent.value = data[0].content
+      rulesInput.value = data[0].content
+    }
+  } catch (e) {
+    console.error('Error fetching gang rules:', e)
+  }
+}
+
+const saveGangRules = async () => {
+  try {
+    const { error } = await client.from('gang_rules').insert({
+      content: rulesInput.value,
+      updated_by: currentUserProfile.value?.character_name || 'ผู้นำแก๊ง'
+    })
+    if (!error) {
+      currentRulesContent.value = rulesInput.value
+      isEditingRules.value = false
+      alert('อัปเดตกฎแก๊งเรียบร้อยแล้ว!')
+    } else {
+      alert('เกิดข้อผิดพลาดในการบันทึกกฎแก๊ง')
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const fetchMyFineLogs = async () => {
+  if (!currentUserProfile.value?.id) return
+  try {
+    const { data } = await client.from('fine_logs').select('*').eq('user_id', currentUserProfile.value.id).order('created_at', { ascending: false })
+    if (data) myFineLogs.value = data
+  } catch (e) {
+    console.error('Error fetching fine logs:', e)
   }
 }
 
 const handleItemFileSelect = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    itemSelectedFile.value = file
-  }
-}
-
-const getCurrentUserId = () => {
-  return currentUserProfile.value?.id || null
-}
-
-const handleCheckin = async () => {
-  const userId = getCurrentUserId()
-  if (!userId) return alert('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง')
-  if (!checkinSelectedFile.value) return alert('กรุณาเลือกไฟล์รูปภาพหลักฐานก่อนครับ')
-
-  isUploadingCheckin.value = true
-  const success = await store.submitCheckin(userId, checkinForm.value.type, checkinSelectedFile.value)
-  isUploadingCheckin.value = false
-
-  if (success) {
-    checkinSelectedFile.value = null
-    checkinImagePreview.value = null
-    alert('ส่งหลักฐานเช็คชื่อเรียบร้อยแล้ว รอหัวหน้าอนุมัติครับ!')
-  } else {
-    alert('เกิดข้อผิดพลาดในการอัปโหลดรูปภาพหรือส่งหลักฐาน')
-  }
+  itemSelectedFile.value = event.target.files[0]
 }
 
 const handleDeleteMember = async (member) => {
-  const confirmDelete = confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบ "${member.character_name}" ออกจากแก๊ง?`)
-  if (confirmDelete) {
+  if (confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบ "${member.character_name}" ออกจากแก๊ง?`)) {
     const success = await store.deleteMember(member.id)
-    if (success) {
-      alert(`ลบสมาชิก "${member.character_name}" ออกเรียบร้อยแล้ว`)
-    } else {
-      alert('เกิดข้อผิดพลาดในการลบสมาชิก')
-    }
+    if (success) alert(`ลบสมาชิก "${member.character_name}" เรียบร้อยแล้ว`)
   }
 }
 
@@ -551,36 +823,26 @@ const handleTreasury = async () => {
 }
 
 const handleAddInventory = async () => {
-  if (!isManagement.value) {
-    return alert('เฉพาะหัวหน้าแก๊งและรองหัวหน้าแก๊งเท่านั้นที่สามารถเพิ่มของเข้าคลังได้')
-  }
-  
+  if (!isManagement.value) return alert('เฉพาะหัวหน้าแก๊งและรองหัวหน้าแก๊งเท่านั้น')
   isUploadingItem.value = true
   const success = await store.addInventoryItem(itemForm.value.name, itemForm.value.category, itemForm.value.quantity, itemSelectedFile.value)
   isUploadingItem.value = false
-
   if (success) {
     itemForm.value.name = ''
-    itemForm.value.category = 'ทั่วไป'
     itemForm.value.quantity = 1
     itemSelectedFile.value = null
     alert('เพิ่มไอเทมเข้าคลังเรียบร้อย!')
-  } else {
-    alert('เกิดข้อผิดพลาดในการบันทึกไอเทม')
   }
 }
 
 const handleTicket = async () => {
-  const userId = getCurrentUserId()
-  if (!userId) return alert('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง')
-
+  const userId = currentUserProfile.value?.id
+  if (!userId) return alert('ไม่พบข้อมูลผู้ใช้')
   const success = await store.submitTicket(userId, ticketForm.value.title, ticketForm.value.category, ticketForm.value.detail)
   if (success) {
     ticketForm.value.title = ''
     ticketForm.value.detail = ''
     alert('ส่งคำร้องเรียบร้อยแล้ว!')
-  } else {
-    alert('เกิดข้อผิดพลาดในการส่งคำร้อง')
   }
 }
 
@@ -611,8 +873,8 @@ const getTicketStatusText = (status) => {
 const exportCSV = () => {
   const profiles = getArray(store.profiles)
   if (profiles.length === 0) return alert('ไม่มีข้อมูลสมาชิกให้ส่งออก')
-  const headers = 'Character Name,Role,Phone,Status\n'
-  const rows = profiles.map(p => `"${p.character_name}","${p.role}","${p.phone_number || ''}","${p.is_online ? 'Online' : 'Offline'}"`).join('\n')
+  const headers = 'Character Name,Role,Phone,Fine Balance,Leave Status\n'
+  const rows = profiles.map(p => `"${p.character_name}","${p.role}","${p.phone_number || ''}","${p.fine_balance || 0}","${p.leave_status ? 'Leave' : 'Normal'}"`).join('\n')
   const blob = new Blob([headers + rows], { type: 'text/csv' })
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
