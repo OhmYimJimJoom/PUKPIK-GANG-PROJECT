@@ -23,10 +23,10 @@ export default defineEventHandler(async (event) => {
   try {
     const today = new Date().toISOString().split('T')[0]
 
-    // 1. ดึงสมาชิกทุกคนที่ไม่ได้ตั้งสถานะลาหยุด (leave_status != true)
+    // 1. ดึงสมาชิกทุกคนทุกตำแหน่ง (รวม role) ที่ไม่ได้ตั้งสถานะลาหยุด (leave_status != true)
     const { data: members, error: memberErr } = await supabase
       .from('profiles')
-      .select('id, fine_balance, leave_status')
+      .select('id, role, fine_balance, leave_status')
       .or('leave_status.is.null,leave_status.eq.false')
 
     if (memberErr) throw memberErr
@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
 
     let finedCount = 0
 
-    // 3. วนลูปตรวจเช็คสมาชิก และทำการปรับเงินหากไม่มีการลงแอร์ดรอปที่อนุมัติ
+    // 3. วนลูปตรวจเช็คสมาชิกทุกตำแหน่ง (รวมหัวแก๊ง/รองแก๊ง) และทำการปรับเงินหากไม่มีการลงแอร์ดรอปที่อนุมัติ
     for (const member of members) {
       const hasApprovedAirdrop = approvedUserIds.has(member.id)
 
@@ -85,7 +85,7 @@ export default defineEventHandler(async (event) => {
     return { 
       success: true, 
       fined_members: finedCount,
-      message: 'คำนวณค่าปรับแอร์ดรอป (เดดไลน์ 22:15 น.) เรียบร้อยแล้ว'
+      message: 'คำนวณค่าปรับแอร์ดรอปสำหรับสมาชิกทุกคน (เดดไลน์ 22:15 น.) เรียบร้อยแล้ว'
     }
   } catch (error: any) {
     console.error('Auto fine error:', error)
