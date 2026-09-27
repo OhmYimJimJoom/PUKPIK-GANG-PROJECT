@@ -83,7 +83,30 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    return { success: true, fined_members: finedCount }
+    // 5. ล้างหลักฐานรูปภาพการเช็คชื่อเดิม และรีเซ็ตสถานะการออนไลน์
+    // ลบรายการเช็คชื่อ daily ของวันก่อนหน้า
+    await supabase
+      .from('checkins')
+      .delete()
+      .lt('created_at', `${today}T00:00:00`)
+
+    // ลบรายการเช็คชื่อ airdrop ของวันก่อนหน้า
+    await supabase
+      .from('airdrop_checkins')
+      .delete()
+      .lt('created_at', `${today}T00:00:00`)
+
+    // ปรับสถานะการออนไลน์ในเมือง (is_online) ของสมาชิกทุกคนให้กลับเป็น false
+    await supabase
+      .from('profiles')
+      .update({ is_online: false })
+      .neq('id', '00000000-0000-0000-0000-000000000000')
+
+    return { 
+      success: true, 
+      fined_members: finedCount,
+      message: 'คำนวณค่าปรับ ลบหลักฐานเช็คชื่อเดิม และรีเซ็ตสถานะออนไลน์เรียบร้อยแล้ว'
+    }
   } catch (error: any) {
     console.error('Auto fine error:', error)
     return { success: false, error: error?.message || 'Internal Server Error' }

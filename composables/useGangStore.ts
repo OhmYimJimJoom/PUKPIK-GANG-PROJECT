@@ -7,13 +7,12 @@ export const useGangStore = () => {
   const currentRole = ref<'leader' | 'co_leader' | 'inventory_keeper' | 'member'>('leader')
   const profiles = ref<any[]>([])
   const treasuryLogs = ref<any[]>([])
-  const pendingDeposits = ref<any[]>([]) // รายการสลิปโอนเงินรออนุมัติ
+  const pendingDeposits = ref<any[]>([])
   const inventory = ref<any[]>([])
   const checkins = ref<any[]>([])
   const airdropCheckins = ref<any[]>([])
   const tickets = ref<any[]>([])
-  const gangRules = ref<any[]>([])
-  const rulesList = ref<any[]>([]) // กฎแก๊งรายข้อ
+  const rulesList = ref<any[]>([])
   const fineLogs = ref<any[]>([])
   const leaveRequests = ref<any[]>([])
 
@@ -39,7 +38,6 @@ export const useGangStore = () => {
       const { data: treasuryData } = await client.from('treasury_transactions').select('*').order('created_at', { ascending: false })
       if (treasuryData) treasuryLogs.value = treasuryData
 
-      // ดึงสลิปฝากเงินรออนุมัติ
       await fetchPendingDeposits()
 
       const { data: inventoryData } = await client.from('inventory').select('*').order('id', { ascending: true })
@@ -54,10 +52,6 @@ export const useGangStore = () => {
       const { data: ticketsData } = await client.from('tickets').select('*, profiles(character_name)').order('created_at', { ascending: false })
       if (ticketsData) tickets.value = ticketsData
 
-      const { data: rulesData } = await client.from('gang_rules').select('*').order('id', { ascending: false }).limit(1)
-      if (rulesData) gangRules.value = rulesData
-
-      // ดึงกฎแก๊งรายข้อ
       await fetchRulesList()
 
       const { data: finesData } = await client.from('fine_logs').select('*').order('created_at', { ascending: false })
@@ -67,48 +61,66 @@ export const useGangStore = () => {
       if (leavesData) leaveRequests.value = leavesData
 
     } catch (err) {
-      console.error('Fetch All Data Error:', err)
+      console.error('Fetch All Data Exception:', err)
     }
   }
 
   // ----------------------------------------------------
-  // 2. ฟังก์ชั่นสลิปโอนเงินเข้าคลัง & กฎแก๊งรายข้อ
+  // 2. ระบบสลิปเงินเข้าคลัง & กฎแก๊งรายข้อ
   // ----------------------------------------------------
   const fetchPendingDeposits = async () => {
     try {
-      const { data } = await client.from('pending_treasury_deposits').select('*, profiles(character_name)').eq('status', 'pending').order('created_at', { ascending: false })
+      const { data, error } = await client.from('pending_treasury_deposits').select('*, profiles(character_name)').eq('status', 'pending').order('created_at', { ascending: false })
+      if (error) {
+        console.error('Fetch Pending Deposits Error:', error)
+        return
+      }
       if (data) pendingDeposits.value = data
     } catch (err) {
-      console.error('Fetch Pending Deposits Error:', err)
+      console.error('Fetch Pending Deposits Exception:', err)
     }
   }
 
   const fetchRulesList = async () => {
     try {
-      const { data } = await client.from('gang_rules_list').select('*').order('rule_number', { ascending: true })
+      const { data, error } = await client.from('gang_rules_list').select('*').order('rule_number', { ascending: true })
+      if (error) {
+        console.error('Fetch Rules List SQL Error:', error.message, error.details, error.hint)
+        return
+      }
       if (data) rulesList.value = data
     } catch (err) {
-      console.error('Fetch Rules List Error:', err)
+      console.error('Fetch Rules List Exception:', err)
     }
   }
 
   const submitDepositSlip = async (userId: string, amount: number, category: string, file: File) => {
     try {
       const slipUrl = await uploadImage(file, 'checkins')
-      if (!slipUrl) return false
+      if (!slipUrl) {
+        alert('เกิดข้อผิดพลาดในการอัปโหลดรูปภาพสลิป กรุณาตรวจสอบ Storage Permissions/Bucket')
+        return false
+      }
 
       const { error } = await (client.from('pending_treasury_deposits') as any).insert({
         user_id: userId,
-        amount,
-        category,
+        amount: Number(amount),
+        category: category,
         slip_url: slipUrl,
         status: 'pending'
       })
 
-      if (!error) await fetchPendingDeposits()
-      return !error
-    } catch (err) {
-      console.error('Submit Deposit Slip Error:', err)
+      if (error) {
+        console.error('Insert Pending Deposit Error:', error.message, error.details, error.hint)
+        alert(`ไม่สามารถส่งสลิปได้: ${error.message}`)
+        return false
+      }
+
+      await fetchPendingDeposits()
+      return true
+    } catch (err: any) {
+      console.error('Submit Deposit Slip Exception:', err)
+      alert(`เกิดข้อผิดพลาดในการส่งสลิป: ${err?.message || err}`)
       return false
     }
   }
@@ -116,7 +128,6 @@ export const useGangStore = () => {
   const approveDeposit = async (deposit: any, isApproved: boolean, reviewerName: string) => {
     try {
       if (isApproved) {
-        // บันทึกลง treasury_transactions
         await (client.from('treasury_transactions') as any).insert({
           type: 'deposit',
           amount: deposit.amount,
@@ -124,10 +135,9 @@ export const useGangStore = () => {
           created_by: reviewerName
         })
 
-        // ถ้าเป็นค่าปรับ ให้หักออกจากยอดหนี้สะสมของผู้ใช้
         if (deposit.category.includes('ค่าปรับ')) {
           const { data: profileData } = await client.from('profiles').select('fine_balance').eq('id', deposit.user_id).single()
-          const profile = profileData as any // แก้ไขประเภทข้อมูลเพื่อป้องกันข้อผิดพลาด TypeScript
+          const profile = profileData as any
           
           if (profile) {
             const newBalance = Math.max(0, (profile.fine_balance || 0) - deposit.amount)
@@ -151,18 +161,33 @@ export const useGangStore = () => {
 
   const addRuleItem = async (ruleNumber: number, title: string, content: string) => {
     try {
-      const { error } = await (client.from('gang_rules_list') as any).insert({ rule_number: ruleNumber, title, content })
-      if (!error) await fetchRulesList()
-      return !error
+      const { error } = await (client.from('gang_rules_list') as any).insert({
+        rule_number: Number(ruleNumber),
+        title,
+        content
+      })
+
+      if (error) {
+        console.error('Insert Rule Error:', error)
+        return false
+      }
+
+      await fetchRulesList()
+      return true
     } catch (err) {
-      console.error('Add Rule Error:', err)
+      console.error('Add Rule Exception:', err)
       return false
     }
   }
 
-  const updateRuleItem = async (id: string | number, title: string, content: string) => {
+  const updateRuleItem = async (id: string, title: string, content: string) => {
     try {
-      const { error } = await (client.from('gang_rules_list') as any).update({ title, content, updated_at: new Date() }).eq('id', id)
+      const { error } = await (client.from('gang_rules_list') as any).update({ 
+        title, 
+        content, 
+        updated_at: new Date().toISOString() 
+      }).eq('id', id)
+
       if (!error) await fetchRulesList()
       return !error
     } catch (err) {
@@ -171,7 +196,7 @@ export const useGangStore = () => {
     }
   }
 
-  const deleteRuleItem = async (id: string | number) => {
+  const deleteRuleItem = async (id: string) => {
     try {
       const { error } = await (client.from('gang_rules_list') as any).delete().eq('id', id)
       if (!error) await fetchRulesList()
@@ -183,7 +208,7 @@ export const useGangStore = () => {
   }
 
   // ----------------------------------------------------
-  // 3. ฟังก์ชั่นเดิมของระบบ
+  // 3. ฟังก์ชั่นอัปโหลดรูปภาพและจัดการระบบเดิม
   // ----------------------------------------------------
   const uploadImage = async (file: File, folder = 'checkins') => {
     try {
@@ -194,7 +219,10 @@ export const useGangStore = () => {
         .from('checkins')
         .upload(fileName, file)
 
-      if (uploadError) throw uploadError
+      if (uploadError) {
+        console.error('Storage Upload Error Detail:', uploadError.message, uploadError)
+        throw uploadError
+      }
 
       const { data } = client.storage
         .from('checkins')
@@ -202,7 +230,7 @@ export const useGangStore = () => {
 
       return data.publicUrl
     } catch (err) {
-      console.error('Upload image error:', err)
+      console.error('Upload image Exception:', err)
       return null
     }
   }
@@ -379,7 +407,6 @@ export const useGangStore = () => {
     checkins,
     airdropCheckins,
     tickets,
-    gangRules,
     rulesList,
     fineLogs,
     leaveRequests,

@@ -7,8 +7,81 @@
     <div class="fixed top-[20%] right-[-5%] w-[600px] h-[600px] bg-cover bg-center rounded-3xl pointer-events-none -rotate-6 backdrop-blur-xs opacity-30 border border-slate-700/50" style="background-image: url('/img/541F17CF-F73E-4E4C-A209-D750B423A3F1.png');"></div>
     <div class="fixed bottom-[-10%] left-[15%] w-[500px] h-[500px] bg-cover bg-center rounded-3xl pointer-events-none rotate-4 backdrop-blur-xs opacity-30 border border-slate-700/50" style="background-image: url('/img/image1.png');"></div>
 
+    <!-- ❄️ Snowfall Canvas Effect -->
+    <canvas ref="snowCanvas" class="fixed inset-0 pointer-events-none z-20"></canvas>
+
+   <!-- 🎵 Floating Audio Player Widget -->
+    <div class="fixed bottom-5 right-5 z-50 bg-slate-900/95 backdrop-blur-md border border-slate-700/80 p-3.5 rounded-2xl shadow-2xl flex flex-col gap-2.5 transition-all hover:border-red-500/50 group w-72 sm:w-80">
+      <audio ref="audioRef" :src="currentTrack.url" @ended="nextTrack" loop={false}></audio>
+      
+      <!-- Top Track Info & Select Box -->
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 overflow-hidden flex-1">
+          <span v-if="isPlaying" class="w-2 h-2 rounded-full bg-green-400 animate-ping shrink-0"></span>
+          <span v-else class="w-2 h-2 rounded-full bg-slate-500 shrink-0"></span>
+          <select 
+            v-model="currentTrackIndex" 
+            @change="changeTrack"
+            class="bg-slate-950 text-xs text-slate-200 border border-slate-800 rounded-lg px-2 py-1 focus:outline-none focus:border-red-500 truncate w-full cursor-pointer"
+          >
+            <option v-for="(track, index) in playlist" :key="index" :value="index">
+              {{ index + 1 }}. {{ track.title }}
+            </option>
+          </select>
+        </div>
+        <span class="text-[10px] text-slate-400 font-medium shrink-0">{{ Math.round(volume * 100) }}%</span>
+      </div>
+
+      <!-- Controls & Volume -->
+      <div class="flex items-center gap-3">
+        <!-- Playback Buttons -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button 
+            @click="prevTrack" 
+            class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center transition text-xs cursor-pointer"
+            title="เพลงก่อนหน้า"
+          >
+            ⏮️
+          </button>
+
+          <button 
+            @click="toggleMusic" 
+            class="w-9 h-9 rounded-xl bg-red-600 hover:bg-red-500 text-white flex items-center justify-center transition shadow-lg shadow-red-600/30 cursor-pointer"
+            :title="isPlaying ? 'หยุดเพลง' : 'เล่นเพลง'"
+          >
+            <span v-if="isPlaying" class="text-sm">⏸️</span>
+            <span v-else class="text-sm animate-pulse">🎵</span>
+          </button>
+
+          <button 
+            @click="nextTrack" 
+            class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center transition text-xs cursor-pointer"
+            title="เพลงถัดไป"
+          >
+            ⏭️
+          </button>
+        </div>
+
+        <div class="flex flex-col gap-1 w-28 sm:w-36">
+          <div class="flex justify-between items-center text-[10px] text-slate-300 font-medium">
+            
+            
+          </div>
+          <input 
+            type="range" 
+            min="0" 
+            max="1" 
+            step="0.01" 
+            v-model.number="volume" 
+            @input="updateVolume"
+            class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-500"
+          />
+        </div>
+      </div>
+    </div>
+
     <!-- Header & Profile Bar & Logout -->
-    <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 sticky top-0 z-50">
+    <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 sticky top-0 z-40">
       <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex items-center space-x-3">
           <div 
@@ -48,7 +121,7 @@
       </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 mt-8 space-y-8 relative z-10">
+    <main class="max-w-7xl mx-auto px-4 mt-8 space-y-8 relative z-30">
       <!-- Nav Tabs -->
       <div class="flex border-b border-slate-800 gap-2 overflow-x-auto">
         <button 
@@ -269,7 +342,7 @@
         </div>
       </div>
 
-      <!-- Tab 2: กฎแก๊ง PUKPIK (แยกปรับปรุงทีละกฎ) -->
+      <!-- Tab 2: กฎแก๊ง PUKPIK -->
       <div v-if="activeTab === 'rules'" class="space-y-6">
         <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
           <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
@@ -288,7 +361,6 @@
             </button>
           </div>
 
-          <!-- แสดงผลรายการกฎเป็นข้อๆ แยกการ์ดสวยงาม -->
           <div class="grid grid-cols-1 gap-4">
             <div 
               v-for="rule in getArray(store.rulesList)" 
@@ -362,16 +434,24 @@
         </div>
       </div>
 
-      <!-- Tab 4: คลังเงินแก๊ง (ปรับแก้: ส่งสลิปฝากเงิน & การอนุมัติ) -->
+      <!-- Tab 4: คลังเงินแก๊ง (เพิ่มระบบเบิกเงินโดยหัวหน้าแก๊ง) -->
       <div v-if="activeTab === 'treasury'" class="space-y-6">
-        <div class="bg-gradient-to-r from-slate-900/90 via-slate-900/90 to-red-950/80 border border-slate-800 rounded-xl p-6 shadow-xl flex justify-between items-center backdrop-blur">
+        <div class="bg-gradient-to-r from-slate-900/90 via-slate-900/90 to-red-950/80 border border-slate-800 rounded-xl p-6 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 backdrop-blur">
           <div>
             <p class="text-xs text-slate-400 mb-1">ยอดเงินคงเหลือในคลังแก๊ง</p>
             <p class="text-4xl font-black text-green-400 font-mono drop-shadow">${{ (getVal(store.totalBalance) || 0).toLocaleString() }}</p>
           </div>
+
+          <!-- ปุ่มเบิกเงินสำหรับหัวหน้า/ยศบริหาร -->
+          <button 
+            v-if="isManagement"
+            @click="showWithdrawModal = true"
+            class="bg-red-600 hover:bg-red-700 text-white text-xs px-5 py-2.5 rounded-xl font-bold transition shadow-lg shadow-red-600/30 flex items-center gap-2 cursor-pointer border border-red-500/50 shrink-0"
+          >
+            💸 เบิกเงินออกจากคลังแก๊ง
+          </button>
         </div>
 
-        <!-- ฟอร์มสำหรับสมาชิกทุกคนในการส่งสลิปโอนเงินเข้าคลัง -->
         <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
           <h2 class="text-lg font-bold text-white mb-1">💳 นำส่งสลิปเงินเข้าคลังแก๊ง</h2>
           <p class="text-xs text-slate-400 mb-4">สมาชิกสามารถแนบสลิปเพื่อขอฝากเงิน, โดเนท หรือชำระค่าปรับได้ทันที</p>
@@ -405,7 +485,6 @@
           </form>
         </div>
 
-        <!-- กล่องคิวรายการสลิปส่งเงินรออนุมัติ (เฉพาะ หัวหน้า / รองหัวหน้า) -->
         <div v-if="isManagement && pendingDeposits.length > 0" class="bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl">
           <h2 class="text-lg font-bold text-amber-400 mb-4">💳 รายการสลิปส่งเงินรออนุมัติ ({{ pendingDeposits.length }})</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -429,7 +508,6 @@
           </div>
         </div>
 
-        <!-- ประวัติการธุรกรรมคลังเงิน -->
         <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl">
           <div class="p-4 border-b border-slate-800 font-bold text-white bg-slate-900/50">ประวัติการธุรกรรม</div>
           <div class="divide-y divide-slate-800/80">
@@ -446,7 +524,7 @@
         </div>
       </div>
 
-      <!-- Tab 5: คลังของแก๊ง (ปรับแก้: เพิ่มยศคนเก็บของแก๊ง & ระบุจำนวนบวกลบไอเทม) -->
+      <!-- Tab 5: คลังของแก๊ง -->
       <div v-if="activeTab === 'inventory'" class="space-y-6">
         <div v-if="canManageInventory" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
           <h2 class="text-lg font-bold text-white mb-4">เพิ่มไอเทมใหม่เข้าคลังแก๊ง</h2>
@@ -485,7 +563,6 @@
           </div>
         </div>
 
-        <!-- แสดงการ์ดไอเทม พร้อมปุ่มปรับจำนวนระบุได้ -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div v-for="item in getArray(store.inventory)" :key="item.id" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl flex flex-col justify-between hover:border-red-500/50 transition duration-300">
             <div class="relative h-40 bg-slate-950 flex items-center justify-center border-b border-slate-800/80 overflow-hidden group">
@@ -504,7 +581,6 @@
                 </p>
               </div>
 
-              <!-- ปุ่มปรับจำนวนไอเทมแบบใส่จำนวนได้ตามระบุ -->
               <div v-if="canManageInventory" class="pt-3 border-t border-slate-800/80 space-y-2">
                 <div class="flex gap-1.5">
                   <button @click="openQtyAdjustModal(item, 'add')" class="flex-1 bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/30 text-xs py-1 rounded font-bold cursor-pointer transition">
@@ -609,7 +685,7 @@
       </div>
     </div>
 
-    <!-- Modal 2: ป๊อปอัพ ปรับจำนวนไอเทม (บวก/ลบ ทีละหลายชิ้น) -->
+    <!-- Modal 2: ป๊อปอัพ ปรับจำนวนไอเทม -->
     <div v-if="showQtyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
       <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-xl p-6 space-y-4 shadow-2xl">
         <h3 class="text-lg font-bold text-white">
@@ -656,11 +732,37 @@
       </div>
     </div>
 
+    <!-- Modal 4: ป๊อปอัพ สำหรับหัวหน้าเบิกเงินออกจากคลังแก๊ง -->
+    <div v-if="showWithdrawModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+      <div class="bg-slate-900 border border-red-500/30 w-full max-w-md rounded-xl p-6 space-y-4 shadow-2xl">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">💸 เบิกเงินออกจากคลังแก๊ง</h3>
+        <p class="text-xs text-slate-400">สำหรับหัวหน้า/รองหัวหน้าแก๊ง เบิกเงินคลังไปใช้ในภารกิจแก๊ง</p>
+        
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">จำนวนเงิน ($)</label>
+            <input v-model.number="withdrawForm.amount" type="number" min="1" placeholder="ระบุจำนวนเงิน" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">เหตุผลในการเบิกเงิน</label>
+            <textarea v-model="withdrawForm.reason" rows="3" placeholder="เช่น ซื้ออาวุธสงคราม, ซื้อยา, จัดกิจกรรม" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-red-500"></textarea>
+          </div>
+        </div>
+
+        <div class="flex gap-2 justify-end pt-2">
+          <button @click="showWithdrawModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-lg cursor-pointer">ยกเลิก</button>
+          <button @click="handleWithdrawSubmit" :disabled="isWithdrawing" class="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-slate-700 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20">
+            {{ isWithdrawing ? 'กำลังทำรายการ...' : 'ยืนยันการเบิกเงิน' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, unref } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, unref } from 'vue'
 
 const store = useGangStore()
 const client = useSupabaseClient()
@@ -668,6 +770,145 @@ const router = useRouter()
 
 const getVal = (target) => unref(target)
 const getArray = (target) => unref(target) || []
+
+// Audio & Playlist State
+const audioRef = ref(null)
+const isPlaying = ref(false)
+const volume = ref(0.3)
+const currentTrackIndex = ref(0)
+
+// 🎵 รายชื่อเพลงทั้งหมด (สามารถเพิ่ม/ลดลิงก์เพลงตรงนี้ได้เลย)
+const playlist = ref([
+  {
+    title: 'ลื้อ ลื้อ',
+    url: 'https://cdn.discordapp.com/attachments/1531701261689294999/1553646892108480542/Y2Mate.is_-_-_Kakagoesbackhome__Official_Audio_.mp3?ex=6aba01ec&is=6ab8b06c&hm=b52eb2bac01f8e66ea765f177bda1d31d0654393c829aa98eee14b8ccbce5c77&'
+  },
+  {
+    title: 'ไม่ได้อยากจะเลวหรอก',
+    url: 'https://cdn.discordapp.com/attachments/1531701261689294999/1553655873870503976/Z9_PAWA_COVER_REMIX.mp3?ex=6aba0a49&is=6ab8b8c9&hm=cadfdba095f12bfccb20e94ca80d5d109e8e6442bf791f76eb5136c1188b887b&'
+  },
+  {
+    title: 'ไม่รักดีกว่า',
+    url: 'https://cdn.discordapp.com/attachments/1531701261689294999/1553656914141905026/Z9_Official_Music_Video.mp3?ex=6aba0b41&is=6ab8b9c1&hm=c3ff0441afb35b7528eea3e726f720c5541c6f88978fd56bdb5da4008a48892f&'
+  },
+ 
+])
+
+const currentTrack = computed(() => playlist.value[currentTrackIndex.value] || playlist.value[0])
+
+const toggleMusic = () => {
+  if (!audioRef.value) return
+  if (isPlaying.value) {
+    audioRef.value.pause()
+    isPlaying.value = false
+  } else {
+    playCurrentTrack()
+  }
+}
+
+const playCurrentTrack = () => {
+  if (!audioRef.value) return
+  audioRef.value.volume = volume.value
+  audioRef.value.play().then(() => {
+    isPlaying.value = true
+  }).catch(e => console.log('Autoplay prevented:', e))
+}
+
+const changeTrack = () => {
+  nextTick(() => {
+    if (isPlaying.value) {
+      playCurrentTrack()
+    }
+  })
+}
+
+const nextTrack = () => {
+  currentTrackIndex.value = (currentTrackIndex.value + 1) % playlist.value.length
+  changeTrack()
+}
+
+const prevTrack = () => {
+  currentTrackIndex.value = (currentTrackIndex.value - 1 + playlist.value.length) % playlist.value.length
+  changeTrack()
+}
+
+const updateVolume = () => {
+  if (audioRef.value) {
+    audioRef.value.volume = volume.value
+  }
+}
+
+
+// ❄️ Snowfall Engine (Canvas)
+const snowCanvas = ref(null)
+let animationFrameId = null
+
+const initSnowfall = () => {
+  const canvas = snowCanvas.value
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  
+  let width = canvas.width = window.innerWidth
+  let height = canvas.height = window.innerHeight
+
+  const handleResize = () => {
+    width = canvas.width = window.innerWidth
+    height = canvas.height = window.innerHeight
+  }
+  window.addEventListener('resize', handleResize)
+
+  const numFlakes = 60
+  const flakes = []
+
+  for (let i = 0; i < numFlakes; i++) {
+    flakes.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      r: Math.random() * 3 + 1,
+      d: Math.random() * numFlakes,
+      opacity: Math.random() * 0.7 + 0.3,
+      speedY: Math.random() * 1 + 0.5,
+      speedX: Math.random() * 0.5 - 0.25
+    })
+  }
+
+  const draw = () => {
+    ctx.clearRect(0, 0, width, height)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+    ctx.beginPath()
+
+    for (let i = 0; i < numFlakes; i++) {
+      const f = flakes[i]
+      ctx.moveTo(f.x, f.y)
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true)
+    }
+    ctx.fill()
+    update()
+    animationFrameId = requestAnimationFrame(draw)
+  }
+
+  const update = () => {
+    for (let i = 0; i < numFlakes; i++) {
+      const f = flakes[i]
+      f.y += f.speedY
+      f.x += f.speedX
+
+      if (f.y > height) {
+        flakes[i] = {
+          x: Math.random() * width,
+          y: -10,
+          r: f.r,
+          d: f.d,
+          opacity: f.opacity,
+          speedY: f.speedY,
+          speedX: f.speedX
+        }
+      }
+    }
+  }
+
+  draw()
+}
 
 // Local State
 const loggedUser = ref(null)
@@ -681,6 +922,11 @@ const leaveReason = ref('')
 const depositFile = ref(null)
 const isUploadingDeposit = ref(false)
 const depositForm = ref({ amount: 1000, category: 'ส่งเงินแก๊ง' })
+
+// State สำหรับการเบิกเงินคลัง
+const showWithdrawModal = ref(false)
+const isWithdrawing = ref(false)
+const withdrawForm = ref({ amount: 1000, reason: '' })
 
 // State สำหรับปรับจำนวนไอเทมคลัง
 const showQtyModal = ref(false)
@@ -712,6 +958,8 @@ const itemForm = ref({ name: '', category: 'ทั่วไป', quantity: 1 })
 const ticketForm = ref({ title: '', category: 'เบิกของ/เงิน', detail: '' })
 
 onMounted(async () => {
+  initSnowfall()
+
   if (process.client) {
     const savedSession = localStorage.getItem('gang_user_session')
     if (savedSession) {
@@ -733,6 +981,16 @@ onMounted(async () => {
   if (store.fetchRulesList) await store.fetchRulesList()
 
   await fetchMyFineLogs()
+
+  if (audioRef.value) {
+    audioRef.value.volume = volume.value
+  }
+})
+
+onBeforeUnmount(() => {
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId)
+  }
 })
 
 const handleLogout = async () => {
@@ -754,7 +1012,6 @@ const currentUserRole = computed(() => currentUserProfile.value?.role || 'member
 const isLeader = computed(() => currentUserRole.value === 'leader')
 const isManagement = computed(() => currentUserRole.value === 'leader' || currentUserRole.value === 'co_leader')
 
-// เพิ่มสิทธิ์คนเก็บของแก๊ง (inventory_keeper)
 const isInventoryKeeper = computed(() => currentUserRole.value === 'inventory_keeper')
 const canManageInventory = computed(() => isManagement.value || isInventoryKeeper.value)
 
@@ -771,7 +1028,6 @@ const tabs = computed(() => [
   { id: 'tickets', label: 'คำร้องสมาชิก' }
 ])
 
-// ระบบส่งสลิปเงินเข้าคลังแก๊ง
 const handleDepositFileSelect = (e) => {
   depositFile.value = e.target.files[0]
 }
@@ -793,6 +1049,43 @@ const handleDepositSubmit = async () => {
   }
 }
 
+// ฟังก์ชันสำหรับหัวหน้าเบิกเงินออกจากคลังแก๊ง (แก้ไขเป็น treasury_transactions)
+const handleWithdrawSubmit = async () => {
+  if (!withdrawForm.value.amount || withdrawForm.value.amount <= 0) return alert('กรุณาระบุจำนวนเงินที่ถูกต้อง')
+  if (!withdrawForm.value.reason.trim()) return alert('กรุณาระบุเหตุผลในการเบิกเงิน')
+  
+  const currentTreasuryBalance = getVal(store.totalBalance) || 0
+  if (withdrawForm.value.amount > currentTreasuryBalance) {
+    return alert('ยอดเงินในคลังแก๊งมีไม่เพียงพอสำหรับการเบิก')
+  }
+
+  isWithdrawing.value = true
+  const leaderName = currentUserProfile.value?.character_name || 'หัวหน้าแก๊ง'
+
+  try {
+    // บันทึกประวัติการเบิกเงินลงในตาราง treasury_transactions
+    const { error } = await client.from('treasury_transactions').insert({
+      type: 'withdraw',
+      amount: withdrawForm.value.amount,
+      description: `เบิกเงินคลัง: ${withdrawForm.value.reason}`,
+      created_by: leaderName
+    })
+
+    if (error) throw error
+
+    alert(`เบิกเงินจำนวน $${withdrawForm.value.amount.toLocaleString()} เรียบร้อยแล้ว!`)
+    showWithdrawModal.value = false
+    withdrawForm.value = { amount: 1000, reason: '' }
+
+    if (store.fetchAllData) await store.fetchAllData()
+  } catch (e) {
+    console.error('Withdraw Error:', e)
+    alert('เกิดข้อผิดพลาดในการเบิกเงินออกจากคลัง')
+  } finally {
+    isWithdrawing.value = false
+  }
+}
+
 const handleApproveDeposit = async (dep, isApproved) => {
   const reviewerName = currentUserProfile.value?.character_name || 'ผู้ดูแล'
   const success = await store.approveDeposit(dep, isApproved, reviewerName)
@@ -801,7 +1094,6 @@ const handleApproveDeposit = async (dep, isApproved) => {
   }
 }
 
-// ระบบจัดการจำนวนไอเทมในคลัง (ระบุจำนวนได้)
 const openQtyAdjustModal = (item, mode) => {
   selectedQtyItem.value = item
   qtyModalMode.value = mode
@@ -824,7 +1116,6 @@ const submitCustomQty = async () => {
   alert(`ปรับเปลี่ยนจำนวนไอเทม "${selectedQtyItem.value.item_name}" เรียบร้อยแล้ว`)
 }
 
-// ระบบจัดการกฎแก๊งรายข้อ
 const openAddRuleModal = () => {
   isEditingSingleRule.value = false
   ruleForm.value = { rule_number: getArray(store.rulesList).length + 1, title: '', content: '' }
@@ -857,7 +1148,6 @@ const handleDeleteRule = async (id) => {
   }
 }
 
-// ระบบอื่นๆ
 const handleLeaveSubmit = async () => {
   if (!leaveReason.value.trim()) return alert('กรุณาระบุสาเหตุการลาหยุดด้วยครับ')
   const userId = currentUserProfile.value?.id
