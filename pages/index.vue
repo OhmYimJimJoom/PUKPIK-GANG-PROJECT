@@ -1231,7 +1231,7 @@ const handleCheckin = async (mode) => {
   const hours = now.getHours()
   const minutes = now.getMinutes()
   
-  if (hours > 22 || (hours === 22 && minutes >= 15)) {
+  if (hours > 22 || (hours === 23 && minutes >= 15)) {
     return alert('ขณะนี้เกินเวลาเดดไลน์ 22:15 น. แล้ว ไม่สามารถส่งหลักฐานแอร์ดรอปได้')
   }
 

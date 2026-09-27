@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/auto-fine",
-      "schedule": "15 15 * * *"
+      "schedule": "0 16 * * *"
     }
   ]
 }
