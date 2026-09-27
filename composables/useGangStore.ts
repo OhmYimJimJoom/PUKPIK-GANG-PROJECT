@@ -7,13 +7,13 @@ export const useGangStore = () => {
   const currentRole = ref<'leader' | 'co_leader' | 'inventory_keeper' | 'member'>('leader')
   const profiles = ref<any[]>([])
   const treasuryLogs = ref<any[]>([])
-  const pendingDeposits = ref<any[]>([]) // [เพิ่มใหม่] รายการสลิปโอนเงินรออนุมัติ
+  const pendingDeposits = ref<any[]>([]) // รายการสลิปโอนเงินรออนุมัติ
   const inventory = ref<any[]>([])
   const checkins = ref<any[]>([])
   const airdropCheckins = ref<any[]>([])
   const tickets = ref<any[]>([])
   const gangRules = ref<any[]>([])
-  const rulesList = ref<any[]>([]) // [เพิ่มใหม่] กฎแก๊งรายข้อ
+  const rulesList = ref<any[]>([]) // กฎแก๊งรายข้อ
   const fineLogs = ref<any[]>([])
   const leaveRequests = ref<any[]>([])
 
@@ -72,7 +72,7 @@ export const useGangStore = () => {
   }
 
   // ----------------------------------------------------
-  // 2. ฟังก์ชั่นสลิปโอนเงินเข้าคลัง & กฎแก๊งรายข้อ (เพิ่มใหม่)
+  // 2. ฟังก์ชั่นสลิปโอนเงินเข้าคลัง & กฎแก๊งรายข้อ
   // ----------------------------------------------------
   const fetchPendingDeposits = async () => {
     try {
@@ -126,7 +126,9 @@ export const useGangStore = () => {
 
         // ถ้าเป็นค่าปรับ ให้หักออกจากยอดหนี้สะสมของผู้ใช้
         if (deposit.category.includes('ค่าปรับ')) {
-          const { data: profile } = await client.from('profiles').select('fine_balance').eq('id', deposit.user_id).single()
+          const { data: profileData } = await client.from('profiles').select('fine_balance').eq('id', deposit.user_id).single()
+          const profile = profileData as any // แก้ไขประเภทข้อมูลเพื่อป้องกันข้อผิดพลาด TypeScript
+          
           if (profile) {
             const newBalance = Math.max(0, (profile.fine_balance || 0) - deposit.amount)
             await (client.from('profiles') as any).update({ fine_balance: newBalance }).eq('id', deposit.user_id)
