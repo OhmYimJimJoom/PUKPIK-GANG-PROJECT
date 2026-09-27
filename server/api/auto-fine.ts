@@ -23,59 +23,45 @@ export default defineEventHandler(async (event) => {
   try {
     const today = new Date().toISOString().split('T')[0]
 
-    // 1. ดึงสมาชิกทั้งหมด (รวม Leader) ที่ไม่ได้ตั้งสถานะลาหยุด
+    // 1. ดึงสมาชิกทุกคนที่ไม่ได้ตั้งสถานะลาหยุด (leave_status != true)
     const { data: members, error: memberErr } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, fine_balance, leave_status')
       .or('leave_status.is.null,leave_status.eq.false')
 
     if (memberErr) throw memberErr
-    if (!members) return { success: true, count: 0 }
+    if (!members || members.length === 0) return { success: true, count: 0 }
 
-    // 2. ดึงรายการเช็คชื่อประจำวันของวันนี้
-    const { data: dailyCheckins } = await supabase
-      .from('checkins')
-      .select('user_id')
-      .gte('created_at', `${today}T00:00:00`)
-
-    // 3. ดึงรายการเช็คชื่อแอร์ดรอปของวันนี้
-    const { data: airdropCheckins } = await supabase
+    // 2. ดึงรายการเช็คชื่อแอร์ดรอปของวันนี้ที่ได้รับการอนุมัติแล้ว ('approved')
+    const { data: approvedAirdrops } = await supabase
       .from('airdrop_checkins')
       .select('user_id')
+      .eq('status', 'approved')
       .gte('created_at', `${today}T00:00:00`)
 
-    const dailyUserIds = new Set(dailyCheckins?.map(c => c.user_id) || [])
-    const airdropUserIds = new Set(airdropCheckins?.map(a => a.user_id) || [])
+    const approvedUserIds = new Set(approvedAirdrops?.map(a => a.user_id) || [])
 
     let finedCount = 0
 
-    // 4. วนลูปตรวจเช็คและบันทึกค่าปรับ
+    // 3. วนลูปตรวจเช็คสมาชิก และทำการปรับเงินหากไม่มีการลงแอร์ดรอปที่อนุมัติ
     for (const member of members) {
-      const missedDaily = !dailyUserIds.has(member.id)
-      const missedAirdrop = !airdropUserIds.has(member.id)
+      const hasApprovedAirdrop = approvedUserIds.has(member.id)
 
-      let penalty = 0
-      let reasons: string[] = []
-
-      if (missedDaily) {
-        penalty += 100000
-        reasons.push('ขาดเช็คชื่อประจำวัน (หลัง 21:00 น.)')
-      }
-      if (missedAirdrop) {
-        penalty += 100000
-        reasons.push('ขาดเช็คชื่อแอร์ดรอป (หลัง 22:00 น.)')
-      }
-
-      if (penalty > 0) {
+      if (!hasApprovedAirdrop) {
+        const penalty = 100000
+        const currentBalance = member.fine_balance ?? 0
+        
+        // อัปเดตยอด Fine Balance ของสมาชิก (+100,000)
         await supabase
           .from('profiles')
-          .update({ fine_balance: (member.fine_balance || 0) + penalty })
+          .update({ fine_balance: currentBalance + penalty })
           .eq('id', member.id)
 
+        // เพิ่มประวัติใน fine_logs
         await supabase.from('fine_logs').insert({
           user_id: member.id,
           amount: penalty,
-          reason: `ปรับอัตโนมัติ: ${reasons.join(' และ ')}`,
+          reason: 'ไม่ได้ลงแอร์ดรอปตามเวลาที่กำหนด (เดดไลน์ 22:15 น.)',
           type: 'fine'
         })
 
@@ -83,29 +69,23 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    // 5. ล้างหลักฐานรูปภาพการเช็คชื่อเดิม และรีเซ็ตสถานะการออนไลน์
-    // ลบรายการเช็คชื่อ daily ของวันก่อนหน้า
+    // 4. ปรับรายการที่ยังค้างรออนุมัติ ('pending') ของวันนี้ให้เป็นปฏิเสธ ('rejected') เนื่องจากเลยเวลาเดดไลน์แล้ว
     await supabase
-      .from('checkins')
-      .delete()
-      .lt('created_at', `${today}T00:00:00`)
+      .from('airdrop_checkins')
+      .update({ status: 'rejected' })
+      .eq('status', 'pending')
+      .gte('created_at', `${today}T00:00:00`)
 
-    // ลบรายการเช็คชื่อ airdrop ของวันก่อนหน้า
+    // 5. ลบหลักฐานรูปภาพการเช็คชื่อแอร์ดรอปของวันก่อนหน้าเพื่อประหยัดพื้นที่ Storage
     await supabase
       .from('airdrop_checkins')
       .delete()
       .lt('created_at', `${today}T00:00:00`)
 
-    // ปรับสถานะการออนไลน์ในเมือง (is_online) ของสมาชิกทุกคนให้กลับเป็น false
-    await supabase
-      .from('profiles')
-      .update({ is_online: false })
-      .neq('id', '00000000-0000-0000-0000-000000000000')
-
     return { 
       success: true, 
       fined_members: finedCount,
-      message: 'คำนวณค่าปรับ ลบหลักฐานเช็คชื่อเดิม และรีเซ็ตสถานะออนไลน์เรียบร้อยแล้ว'
+      message: 'คำนวณค่าปรับแอร์ดรอป (เดดไลน์ 22:15 น.) เรียบร้อยแล้ว'
     }
   } catch (error: any) {
     console.error('Auto fine error:', error)

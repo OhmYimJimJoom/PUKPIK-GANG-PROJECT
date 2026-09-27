@@ -18,7 +18,8 @@ export const useGangStore = () => {
 
   const totalBalance = computed(() => {
     return treasuryLogs.value.reduce((sum: number, item: any) => {
-      return item.type === 'deposit' ? sum + Number(item.amount) : sum - Number(item.amount)
+      const amount = Number(item.amount) || 0
+      return item.type === 'deposit' ? sum + amount : sum - amount
     }, 0)
   })
 
@@ -32,32 +33,40 @@ export const useGangStore = () => {
   // ----------------------------------------------------
   const fetchAllData = async () => {
     try {
-      const { data: profilesData } = await client.from('profiles').select('*')
+      const { data: profilesData, error: profilesErr } = await client.from('profiles').select('*')
+      if (profilesErr) console.error('Fetch Profiles Error:', profilesErr.message)
       if (profilesData) profiles.value = profilesData
 
-      const { data: treasuryData } = await client.from('treasury_transactions').select('*').order('created_at', { ascending: false })
+      const { data: treasuryData, error: treasuryErr } = await client.from('treasury_transactions').select('*').order('created_at', { ascending: false })
+      if (treasuryErr) console.error('Fetch Treasury Error:', treasuryErr.message)
       if (treasuryData) treasuryLogs.value = treasuryData
 
       await fetchPendingDeposits()
 
-      const { data: inventoryData } = await client.from('inventory').select('*').order('id', { ascending: true })
+      const { data: inventoryData, error: inventoryErr } = await client.from('inventory').select('*').order('id', { ascending: true })
+      if (inventoryErr) console.error('Fetch Inventory Error:', inventoryErr.message)
       if (inventoryData) inventory.value = inventoryData
 
-      const { data: checkinsData } = await client.from('checkins').select('*, profiles(username, character_name)').order('created_at', { ascending: false })
+      const { data: checkinsData, error: checkinsErr } = await client.from('checkins').select('*, profiles(username, character_name)').order('created_at', { ascending: false })
+      if (checkinsErr) console.error('Fetch Checkins Error:', checkinsErr.message)
       if (checkinsData) checkins.value = checkinsData
 
-      const { data: airdropData } = await client.from('airdrop_checkins').select('*, profiles(character_name)').order('created_at', { ascending: false })
+      const { data: airdropData, error: airdropErr } = await client.from('airdrop_checkins').select('*, profiles(character_name)').order('created_at', { ascending: false })
+      if (airdropErr) console.error('Fetch Airdrop Error:', airdropErr.message)
       if (airdropData) airdropCheckins.value = airdropData
 
-      const { data: ticketsData } = await client.from('tickets').select('*, profiles(character_name)').order('created_at', { ascending: false })
+      const { data: ticketsData, error: ticketsErr } = await client.from('tickets').select('*, profiles(character_name)').order('created_at', { ascending: false })
+      if (ticketsErr) console.error('Fetch Tickets Error:', ticketsErr.message)
       if (ticketsData) tickets.value = ticketsData
 
       await fetchRulesList()
 
-      const { data: finesData } = await client.from('fine_logs').select('*').order('created_at', { ascending: false })
+      const { data: finesData, error: finesErr } = await client.from('fine_logs').select('*').order('created_at', { ascending: false })
+      if (finesErr) console.error('Fetch Fines Error:', finesErr.message)
       if (finesData) fineLogs.value = finesData
 
-      const { data: leavesData } = await client.from('leave_requests').select('*, profiles(character_name)').order('created_at', { ascending: false })
+      const { data: leavesData, error: leavesErr } = await client.from('leave_requests').select('*, profiles(character_name)').order('created_at', { ascending: false })
+      if (leavesErr) console.error('Fetch Leaves Error:', leavesErr.message)
       if (leavesData) leaveRequests.value = leavesData
 
     } catch (err) {
@@ -128,28 +137,42 @@ export const useGangStore = () => {
   const approveDeposit = async (deposit: any, isApproved: boolean, reviewerName: string) => {
     try {
       if (isApproved) {
-        await (client.from('treasury_transactions') as any).insert({
+        const depositAmount = Number(deposit.amount) || 0
+
+        const { error: insertErr } = await (client.from('treasury_transactions') as any).insert({
           type: 'deposit',
-          amount: deposit.amount,
+          amount: depositAmount,
           description: `[${deposit.category}] โดย ${deposit.profiles?.character_name || 'สมาชิก'}`,
           created_by: reviewerName
         })
 
+        if (insertErr) {
+          console.error('Insert Treasury Transaction Error:', insertErr.message)
+          return false
+        }
+
+        // ตัดยอดค่าปรับเฉพาะกรณีหมวดหมู่เป็นเรื่องค่าปรับ
         if (deposit.category.includes('ค่าปรับ')) {
           const { data: profileData } = await client.from('profiles').select('fine_balance').eq('id', deposit.user_id).single()
           const profile = profileData as any
           
           if (profile) {
-            const newBalance = Math.max(0, (profile.fine_balance || 0) - deposit.amount)
+            const currentBalance = profile.fine_balance ?? 0
+            const newBalance = Math.max(0, currentBalance - depositAmount)
             await (client.from('profiles') as any).update({ fine_balance: newBalance }).eq('id', deposit.user_id)
           }
         }
       }
 
-      await (client.from('pending_treasury_deposits') as any).update({
+      const { error: updateErr } = await (client.from('pending_treasury_deposits') as any).update({
         status: isApproved ? 'approved' : 'rejected',
         approved_by: reviewerName
       }).eq('id', deposit.id)
+
+      if (updateErr) {
+        console.error('Update Pending Deposit Status Error:', updateErr.message)
+        return false
+      }
 
       await fetchAllData()
       return true
@@ -305,31 +328,49 @@ export const useGangStore = () => {
   }
 
   const deleteMember = async (userId: string) => {
-    const { error } = await (client.from('profiles') as any).delete().eq('id', userId)
-    if (!error) await fetchAllData()
-    return !error
+    try {
+      const { error } = await (client.from('profiles') as any).delete().eq('id', userId)
+      if (error) {
+        console.error('Delete Member Error:', error.message)
+        return false
+      }
+      await fetchAllData()
+      return true
+    } catch (err) {
+      console.error('Delete Member Exception:', err)
+      return false
+    }
   }
 
   const approveCheckin = async (checkinId: number | string, userId: string, checkType: 'in' | 'out', approve: boolean) => {
-    const newStatus = approve ? 'approved' : 'rejected'
-    await (client.from('checkins') as any).update({ status: newStatus }).eq('id', checkinId)
+    try {
+      const newStatus = approve ? 'approved' : 'rejected'
+      const { error } = await (client.from('checkins') as any).update({ status: newStatus }).eq('id', checkinId)
 
-    if (approve) {
-      await (client.from('profiles') as any).update({ is_online: checkType === 'in' }).eq('id', userId)
+      if (!error && approve) {
+        await (client.from('profiles') as any).update({ is_online: checkType === 'in' }).eq('id', userId)
+      }
+
+      await fetchAllData()
+    } catch (err) {
+      console.error('Approve Checkin Error:', err)
     }
-
-    await fetchAllData()
   }
 
   const addTreasuryTransaction = async (type: 'deposit' | 'withdraw', amount: number, description: string, creatorName: string) => {
-    const { error } = await (client.from('treasury_transactions') as any).insert({
-      type,
-      amount,
-      description,
-      created_by: creatorName
-    })
-    if (!error) await fetchAllData()
-    return !error
+    try {
+      const { error } = await (client.from('treasury_transactions') as any).insert({
+        type,
+        amount: Number(amount) || 0,
+        description,
+        created_by: creatorName
+      })
+      if (!error) await fetchAllData()
+      return !error
+    } catch (err) {
+      console.error('Add Treasury Transaction Error:', err)
+      return false
+    }
   }
 
   const addInventoryItem = async (itemName: string, category: string, quantity: number, file: File | null) => {
@@ -339,10 +380,13 @@ export const useGangStore = () => {
       )
 
       if (existingItem) {
-        const updatedQty = Number(existingItem.quantity) + Number(quantity)
+        const updatedQty = (Number(existingItem.quantity) || 0) + (Number(quantity) || 0)
         
         const { error } = await (client.from('inventory') as any)
-          .update({ quantity: updatedQty })
+          .update({ 
+            quantity: updatedQty,
+            updated_at: new Date().toISOString()
+          })
           .eq('id', existingItem.id)
 
         if (error) throw error
@@ -355,7 +399,7 @@ export const useGangStore = () => {
         const { error } = await (client.from('inventory') as any).insert({
           item_name: itemName.trim(),
           category,
-          quantity,
+          quantity: Number(quantity) || 0,
           image_url: imageUrl
         })
 
@@ -372,30 +416,51 @@ export const useGangStore = () => {
 
   const updateInventoryQty = async (itemId: number | string, newQty: number) => {
     if (newQty < 0) return
-    await (client.from('inventory') as any).update({ quantity: newQty }).eq('id', itemId)
-    await fetchAllData()
+    try {
+      const { error } = await (client.from('inventory') as any).update({ 
+        quantity: newQty,
+        updated_at: new Date().toISOString()
+      }).eq('id', itemId)
+      
+      if (!error) await fetchAllData()
+    } catch (err) {
+      console.error('Update Inventory Qty Error:', err)
+    }
   }
 
   const deleteInventoryItem = async (itemId: number | string) => {
-    await (client.from('inventory') as any).delete().eq('id', itemId)
-    await fetchAllData()
+    try {
+      const { error } = await (client.from('inventory') as any).delete().eq('id', itemId)
+      if (!error) await fetchAllData()
+    } catch (err) {
+      console.error('Delete Inventory Item Error:', err)
+    }
   }
 
   const submitTicket = async (userId: string, title: string, category: string, detail: string) => {
-    const { error } = await (client.from('tickets') as any).insert({
-      user_id: userId,
-      title,
-      category,
-      detail,
-      status: 'pending'
-    })
-    if (!error) await fetchAllData()
-    return !error
+    try {
+      const { error } = await (client.from('tickets') as any).insert({
+        user_id: userId,
+        title,
+        category,
+        detail,
+        status: 'pending'
+      })
+      if (!error) await fetchAllData()
+      return !error
+    } catch (err) {
+      console.error('Submit Ticket Error:', err)
+      return false
+    }
   }
 
   const updateTicketStatus = async (ticketId: number | string, status: 'approved' | 'rejected') => {
-    await (client.from('tickets') as any).update({ status }).eq('id', ticketId)
-    await fetchAllData()
+    try {
+      const { error } = await (client.from('tickets') as any).update({ status }).eq('id', ticketId)
+      if (!error) await fetchAllData()
+    } catch (err) {
+      console.error('Update Ticket Status Error:', err)
+    }
   }
 
   return {

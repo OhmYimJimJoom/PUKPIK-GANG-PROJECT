@@ -12,7 +12,7 @@
 
    <!-- 🎵 Floating Audio Player Widget -->
     <div class="fixed bottom-5 right-5 z-50 bg-slate-900/95 backdrop-blur-md border border-slate-700/80 p-3.5 rounded-2xl shadow-2xl flex flex-col gap-2.5 transition-all hover:border-red-500/50 group w-72 sm:w-80">
-      <audio ref="audioRef" :src="currentTrack.url" @ended="nextTrack" loop={false}></audio>
+      <audio ref="audioRef" :src="currentTrack.url" @ended="nextTrack" :loop="false"></audio>
       
       <!-- Top Track Info & Select Box -->
       <div class="flex items-center justify-between gap-2">
@@ -63,10 +63,6 @@
         </div>
 
         <div class="flex flex-col gap-1 w-28 sm:w-36">
-          <div class="flex justify-between items-center text-[10px] text-slate-300 font-medium">
-            
-            
-          </div>
           <input 
             type="range" 
             min="0" 
@@ -140,14 +136,16 @@
         </button>
       </div>
 
-      <!-- Tab 1: รายชื่อสมาชิก & การเช็คชื่อ -->
+      <!-- Tab 1: รายชื่อสมาชิก & การเช็คชื่อแอร์ดรอป -->
       <div v-if="activeTab === 'members'" class="space-y-6">
+        
+        <!-- แจ้งลาหยุดประจำวัน -->
         <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
           <div>
             <h3 class="text-sm font-bold text-white flex items-center gap-2">
               🌴 แจ้งลาหยุดประจำวัน
             </h3>
-            <p class="text-xs text-slate-400 mt-1">ต้องระบุสาเหตุ และรอการอนุมัติจากหัวหน้า/รองหัวหน้าแก๊งก่อน จึงจะเว้นเว้นค่าปรับเช็คชื่อ</p>
+            <p class="text-xs text-slate-400 mt-1">ต้องระบุสาเหตุ และรอการอนุมัติจากหัวหน้า/รองหัวหน้าแก๊งก่อน จึงจะเว้นการโดนปรับแอร์ดรอป</p>
           </div>
           
           <button 
@@ -167,6 +165,7 @@
           </button>
         </div>
 
+        <!-- รายการขอลาหยุดรออนุมัติ -->
         <div v-if="isManagement && pendingLeaveRequests.length > 0" class="bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl">
           <h2 class="text-lg font-bold text-amber-400 mb-4">🌴 รายการคำขอลาหยุดรออนุมัติ ({{ pendingLeaveRequests.length }})</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -186,94 +185,67 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
-            <h2 class="text-base font-bold text-white mb-1 flex items-center gap-2">
-              <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
-              1. เช็คชื่อประจำวัน (เดดไลน์ 21:00 น.)
-            </h2>
-            <p class="text-xs text-slate-400 mb-4">*หากขาดเช็คชื่อระบบจะปรับ 100,000 บาท อัตโนมัติ*</p>
-            <form @submit.prevent="handleCheckin('daily')" class="space-y-3">
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">ประเภท</label>
-                <select v-model="dailyForm.type" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-red-500">
-                  <option value="in">เข้าเมือง (Check-In)</option>
-                  <option value="out">ออกเมือง (Check-Out)</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">เลือกรูปภาพหลักฐาน</label>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  @change="e => handleFileSelect(e, 'daily')" 
-                  required 
-                  class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300 file:bg-slate-800 file:text-slate-200 file:border-0 file:rounded file:px-2 file:py-1 cursor-pointer" 
-                />
-              </div>
-              <button 
-                type="submit" 
-                :disabled="isUploadingDaily" 
-                class="w-full bg-red-600 hover:bg-red-700 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-xs transition cursor-pointer shadow-lg shadow-red-600/20"
-              >
-                {{ isUploadingDaily ? 'กำลังอัปโหลด...' : 'ส่งหลักฐานเช็คชื่อวัน' }}
-              </button>
-            </form>
+        <!-- Form เช็คชื่อเข้าแอร์ดรอป -->
+        <div class="max-w-2xl mx-auto bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl">
+          <h2 class="text-base font-bold text-amber-400 mb-1 flex items-center gap-2">
+            <span class="w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping"></span>
+            เช็คชื่อเข้าแอร์ดรอป (เดดไลน์ 22:15 น.)
+          </h2>
+          <p class="text-xs text-slate-400 mb-4">*ถ่ายรูปหลักฐานส่งก่อน 22:15 น. เพื่อให้หัวแก๊งกดอนุมัติ หากเลยเวลา 22:15 น. หรือไม่ได้รับการอนุมัติ จะโดนปรับ 100,000 บาท อัตโนมัติ*</p>
+          
+          <!-- แสดงเตือนถ้าส่งไปแล้วแต่รออนุมัติอยู่ -->
+          <div v-if="userPendingAirdrop" class="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 text-xs">
+            ⏳ ส่งหลักฐานแอร์ดรอปแล้ว กำลังรอหัวแก๊งกดอนุมัติ...
           </div>
 
-          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
-            <h2 class="text-base font-bold text-amber-400 mb-1 flex items-center gap-2">
-              <span class="w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping"></span>
-              2. เช็คชื่อแอร์ดรอป (เดดไลน์ 22:00 น.)
-            </h2>
-            <p class="text-xs text-slate-400 mb-4">*หากขาดเช็คชื่อแอร์ดรอประบบจะปรับ 100,000 บาท อัตโนมัติ*</p>
-            <form @submit.prevent="handleCheckin('airdrop')" class="space-y-3">
-              <div>
-                <label class="block text-xs text-slate-400 mb-1">เลือกรูปภาพหลักฐานร่วมกิจกรรม</label>
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  @change="e => handleFileSelect(e, 'airdrop')" 
-                  required 
-                  class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300 file:bg-slate-800 file:text-slate-200 file:border-0 file:rounded file:px-2 file:py-1 cursor-pointer" 
-                />
-              </div>
-              <button 
-                type="submit" 
-                :disabled="isUploadingAirdrop" 
-                class="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-xs transition cursor-pointer shadow-lg shadow-amber-600/20"
-              >
-                {{ isUploadingAirdrop ? 'กำลังอัปโหลด...' : 'ส่งหลักฐานแอร์ดรอป' }}
-              </button>
-            </form>
-          </div>
+          <form @submit.prevent="handleCheckin('airdrop')" class="space-y-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">เลือกรูปภาพหลักฐานเข้าร่วมแอร์ดรอป</label>
+              <input 
+                type="file" 
+                accept="image/*" 
+                @change="e => handleFileSelect(e, 'airdrop')" 
+                required 
+                class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-300 file:bg-slate-800 file:text-slate-200 file:border-0 file:rounded file:px-2 file:py-1 cursor-pointer" 
+              />
+            </div>
+            <button 
+              type="submit" 
+              :disabled="isUploadingAirdrop" 
+              class="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-slate-700 text-white font-medium py-2.5 rounded-lg text-xs transition cursor-pointer shadow-lg shadow-amber-600/20"
+            >
+              {{ isUploadingAirdrop ? 'กำลังอัปโหลด...' : 'ส่งหลักฐานแอร์ดรอปให้หัวแก๊งอนุมัติ' }}
+            </button>
+          </form>
         </div>
 
-        <div v-if="isManagement && pendingCheckins.length > 0" class="bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl">
-          <h2 class="text-lg font-bold text-amber-400 mb-4">⏳ รายการเช็คชื่อรออนุมัติ ({{ pendingCheckins.length }})</h2>
+        <!-- รายการอนุมัติแอร์ดรอปรอตรวจสอบ (ยศบริหาร/หัวแก๊ง) -->
+        <div v-if="isManagement && pendingAirdropCheckins.length > 0" class="bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl">
+          <h2 class="text-lg font-bold text-amber-400 mb-4">⏳ รายการเช็คชื่อแอร์ดรอปรออนุมัติ ({{ pendingAirdropCheckins.length }})</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div v-for="item in pendingCheckins" :key="item.id" class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3">
+            <div v-for="item in pendingAirdropCheckins" :key="item.id" class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3">
               <div class="flex justify-between items-start">
                 <div>
                   <p class="font-bold text-white">{{ item.profiles?.character_name || 'สมาชิก' }}</p>
-                  <p class="text-xs text-slate-400">ประเภท: <span :class="item.check_type === 'in' ? 'text-green-400' : 'text-red-400'">{{ item.check_type === 'in' ? 'เข้าเมือง' : 'ออกเมือง' }}</span></p>
+                  <p class="text-xs text-amber-400">เช็คชื่อแอร์ดรอป</p>
                 </div>
                 <span class="text-[10px] text-slate-500">{{ new Date(item.created_at).toLocaleTimeString() }}</span>
               </div>
               <a :href="item.image_url" target="_blank" class="block">
-                <img :src="item.image_url" class="w-full h-32 object-cover rounded-md border border-slate-800 hover:opacity-90 transition" />
+                <img :src="item.image_url" class="w-full h-36 object-cover rounded-md border border-slate-800 hover:opacity-90 transition" />
               </a>
               <div class="flex gap-2 pt-2 border-t border-slate-800">
-                <button @click="store.approveCheckin(item.id, item.user_id, item.check_type, true)" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1.5 rounded font-medium cursor-pointer">อนุมัติ</button>
-                <button @click="store.approveCheckin(item.id, item.user_id, item.check_type, false)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-1.5 rounded cursor-pointer">ปฏิเสธ</button>
+                <button @click="handleApproveAirdrop(item.id, item.user_id, true)" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1.5 rounded font-medium cursor-pointer">อนุมัติ</button>
+                <button @click="handleApproveAirdrop(item.id, item.user_id, false)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-1.5 rounded cursor-pointer">ปฏิเสธ</button>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- ตารางรายชื่อสมาชิก & สถานะลงแอร์ดรอป -->
         <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl">
           <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-            <h2 class="font-bold text-white">รายชื่อสมาชิกทั้งหมด</h2>
+            <h2 class="font-bold text-white">รายชื่อสมาชิกและสถานะการลงแอร์ดรอปประจำวัน</h2>
             <button v-if="isManagement" @click="exportCSV" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 cursor-pointer">
               📥 ส่งออกไฟล์ CSV
             </button>
@@ -287,7 +259,7 @@
                   <th class="p-4">เบอร์โทร</th>
                   <th class="p-4">สถานะการลา</th>
                   <th class="p-4">ยอดหนี้สะสม</th>
-                  <th class="p-4">สถานะในเมือง</th>
+                  <th class="p-4">สถานะแอร์ดรอป</th>
                   <th class="p-4">หลักฐานล่าสุด</th>
                   <th v-if="isManagement" class="p-4 text-center">จัดการ</th>
                 </tr>
@@ -309,20 +281,47 @@
                   <td class="p-4 font-mono font-bold" :class="(member.fine_balance || 0) > 0 ? 'text-red-400' : 'text-green-400'">
                     ${{ (member.fine_balance || 0).toLocaleString() }}
                   </td>
+                  
+                  <!-- สถานะการลงแอร์ดรอป (ลงแล้ว / ลา / ไม่ได้ลง) -->
                   <td class="p-4">
-                    <span :class="member.is_online ? 'bg-green-500/10 text-green-400 border-green-500/30' : 'bg-slate-800 text-slate-500 border-slate-700'" class="px-2.5 py-1 rounded-full text-xs border flex items-center w-fit gap-1.5">
-                      <span class="w-1.5 h-1.5 rounded-full" :class="member.is_online ? 'bg-green-400 animate-pulse' : 'bg-slate-500'"></span>
-                      {{ member.is_online ? 'อยู่ในเมือง' : 'นอกเมือง' }}
+                    <span 
+                      v-if="getAirdropStatus(member) === 'approved'"
+                      class="bg-green-500/10 text-green-400 border-green-500/30 px-2.5 py-1 rounded-full text-xs border flex items-center w-fit gap-1.5 font-bold"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                      ลงแอร์ดรอปแล้ว
+                    </span>
+                    <span 
+                      v-else-if="getAirdropStatus(member) === 'leave'"
+                      class="bg-blue-500/10 text-blue-400 border-blue-500/30 px-2.5 py-1 rounded-full text-xs border flex items-center w-fit gap-1.5 font-bold"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                      ลาหยุด
+                    </span>
+                    <span 
+                      v-else-if="getAirdropStatus(member) === 'pending'"
+                      class="bg-amber-500/10 text-amber-400 border-amber-500/30 px-2.5 py-1 rounded-full text-xs border flex items-center w-fit gap-1.5 font-bold"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+                      รอหัวแก๊งอนุมัติ
+                    </span>
+                    <span 
+                      v-else
+                      class="bg-red-500/10 text-red-400 border-red-500/30 px-2.5 py-1 rounded-full text-xs border flex items-center w-fit gap-1.5 font-bold"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                      ไม่ได้ลงแอร์ดรอป
                     </span>
                   </td>
+
                   <td class="p-4">
-                    <div v-if="store.getLatestCheckinImage && store.getLatestCheckinImage(member.id)" class="flex items-center gap-2">
+                    <div v-if="getLatestAirdropImage(member.id)" class="flex items-center gap-2">
                       <a 
-                        :href="store.getLatestCheckinImage(member.id)" 
+                        :href="getLatestAirdropImage(member.id)" 
                         target="_blank" 
                         class="bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 px-2.5 py-1 rounded text-xs border border-slate-700 flex items-center gap-1 transition"
                       >
-                        📷 View รูป
+                        📷 รูปหลักฐาน
                       </a>
                     </div>
                     <span v-else class="text-xs text-slate-600 italic">ไม่มีหลักฐาน</span>
@@ -434,7 +433,7 @@
         </div>
       </div>
 
-      <!-- Tab 4: คลังเงินแก๊ง (เพิ่มระบบเบิกเงินโดยหัวหน้าแก๊ง) -->
+      <!-- Tab 4: คลังเงินแก๊ง -->
       <div v-if="activeTab === 'treasury'" class="space-y-6">
         <div class="bg-gradient-to-r from-slate-900/90 via-slate-900/90 to-red-950/80 border border-slate-800 rounded-xl p-6 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 backdrop-blur">
           <div>
@@ -442,7 +441,6 @@
             <p class="text-4xl font-black text-green-400 font-mono drop-shadow">${{ (getVal(store.totalBalance) || 0).toLocaleString() }}</p>
           </div>
 
-          <!-- ปุ่มเบิกเงินสำหรับหัวหน้า/ยศบริหาร -->
           <button 
             v-if="isManagement"
             @click="showWithdrawModal = true"
@@ -467,7 +465,6 @@
               <select v-model="depositForm.category" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500">
                 <option value="ส่งเงินแก๊ง">ส่งเงินแก๊ง</option>
                 <option value="โดเนทให้แก๊ง">โดเนทให้แก๊ง</option>
-                <option value="จ่ายค่าปรับการเช็คชื่อ">จ่ายค่าปรับการเช็คชื่อ</option>
                 <option value="จ่ายค่าปรับแอร์ดรอป">จ่ายค่าปรับแอร์ดรอป</option>
               </select>
             </div>
@@ -762,7 +759,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount, unref } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, unref, nextTick } from 'vue'
 
 const store = useGangStore()
 const client = useSupabaseClient()
@@ -777,7 +774,6 @@ const isPlaying = ref(false)
 const volume = ref(0.3)
 const currentTrackIndex = ref(0)
 
-// 🎵 รายชื่อเพลงทั้งหมด (สามารถเพิ่ม/ลดลิงก์เพลงตรงนี้ได้เลย)
 const playlist = ref([
   {
     title: 'ลื้อ ลื้อ',
@@ -791,7 +787,6 @@ const playlist = ref([
     title: 'ไม่รักดีกว่า',
     url: 'https://cdn.discordapp.com/attachments/1531701261689294999/1553656914141905026/Z9_Official_Music_Video.mp3?ex=6aba0b41&is=6ab8b9c1&hm=c3ff0441afb35b7528eea3e726f720c5541c6f88978fd56bdb5da4008a48892f&'
   },
- 
 ])
 
 const currentTrack = computed(() => playlist.value[currentTrackIndex.value] || playlist.value[0])
@@ -837,7 +832,6 @@ const updateVolume = () => {
     audioRef.value.volume = volume.value
   }
 }
-
 
 // ❄️ Snowfall Engine (Canvas)
 const snowCanvas = ref(null)
@@ -944,18 +938,72 @@ const ruleForm = ref({ rule_number: 1, title: '', content: '' })
 const myFineLogs = ref([])
 
 // State ไฟล์อัปโหลด
-const dailyFile = ref(null)
 const airdropFile = ref(null)
-
-const isUploadingDaily = ref(false)
 const isUploadingAirdrop = ref(false)
 const isUploadingItem = ref(false)
 
-const dailyForm = ref({ type: 'in' })
 const itemSelectedFile = ref(null)
-
 const itemForm = ref({ name: '', category: 'ทั่วไป', quantity: 1 })
 const ticketForm = ref({ title: '', category: 'เบิกของ/เงิน', detail: '' })
+
+// สภาพแวดล้อมเช็คชื่อแอร์ดรอป
+const airdropCheckinsList = ref([])
+
+const fetchAirdropCheckins = async () => {
+  try {
+    const { data, error } = await client
+      .from('airdrop_checkins')
+      .select('*, profiles(character_name)')
+      .order('created_at', { ascending: false })
+    if (!error && data) {
+      airdropCheckinsList.value = data
+    }
+  } catch (e) {
+    console.error('Error fetching airdrop checkins:', e)
+  }
+}
+
+// หาข้อมูลเช็คชื่อแอร์ดรอปประจำวันของแต่ละสมาชิก
+const getAirdropStatus = (member) => {
+  if (member.leave_status) return 'leave'
+
+  const todayStr = new Date().toISOString().split('T')[0]
+  const userCheckin = airdropCheckinsList.value.find(item => {
+    const itemDate = new Date(item.created_at).toISOString().split('T')[0]
+    return item.user_id === member.id && itemDate === todayStr
+  })
+
+  if (!userCheckin) return 'not_checked'
+  if (userCheckin.status === 'approved') return 'approved'
+  if (userCheckin.status === 'pending') return 'pending'
+  return 'not_checked'
+}
+
+const getLatestAirdropImage = (userId) => {
+  const todayStr = new Date().toISOString().split('T')[0]
+  const checkin = airdropCheckinsList.value.find(item => {
+    const itemDate = new Date(item.created_at).toISOString().split('T')[0]
+    return item.user_id === userId && itemDate === todayStr
+  })
+  return checkin ? checkin.image_url : null
+}
+
+const pendingAirdropCheckins = computed(() => {
+  const todayStr = new Date().toISOString().split('T')[0]
+  return airdropCheckinsList.value.filter(item => {
+    const itemDate = new Date(item.created_at).toISOString().split('T')[0]
+    return item.status === 'pending' && itemDate === todayStr
+  })
+})
+
+const userPendingAirdrop = computed(() => {
+  if (!currentUserProfile.value?.id) return false
+  const todayStr = new Date().toISOString().split('T')[0]
+  return airdropCheckinsList.value.some(item => {
+    const itemDate = new Date(item.created_at).toISOString().split('T')[0]
+    return item.user_id === currentUserProfile.value.id && item.status === 'pending' && itemDate === todayStr
+  })
+})
 
 onMounted(async () => {
   initSnowfall()
@@ -980,6 +1028,7 @@ onMounted(async () => {
   if (store.fetchPendingDeposits) await store.fetchPendingDeposits()
   if (store.fetchRulesList) await store.fetchRulesList()
 
+  await fetchAirdropCheckins()
   await fetchMyFineLogs()
 
   if (audioRef.value) {
@@ -1015,12 +1064,11 @@ const isManagement = computed(() => currentUserRole.value === 'leader' || curren
 const isInventoryKeeper = computed(() => currentUserRole.value === 'inventory_keeper')
 const canManageInventory = computed(() => isManagement.value || isInventoryKeeper.value)
 
-const pendingCheckins = computed(() => getArray(store.checkins).filter(c => c.status === 'pending'))
 const pendingLeaveRequests = computed(() => getArray(store.leaveRequests).filter(r => r.status === 'pending'))
 const pendingDeposits = computed(() => getArray(store.pendingDeposits))
 
 const tabs = computed(() => [
-  { id: 'members', label: 'สมาชิก & เช็คชื่อ', badge: pendingCheckins.value.length + (isManagement.value ? pendingLeaveRequests.value.length : 0) },
+  { id: 'members', label: 'สมาชิก & แอร์ดรอป', badge: (isManagement.value ? (pendingAirdropCheckins.value.length + pendingLeaveRequests.value.length) : 0) },
   { id: 'rules', label: '📜 กฎแก๊ง PUKPIK' },
   { id: 'profile', label: '👤 โปรไฟล์ & ค่าปรับ' },
   { id: 'treasury', label: 'คลังเงินแก๊ง', badge: isManagement.value ? pendingDeposits.value.length : 0 },
@@ -1049,7 +1097,6 @@ const handleDepositSubmit = async () => {
   }
 }
 
-// ฟังก์ชันสำหรับหัวหน้าเบิกเงินออกจากคลังแก๊ง (แก้ไขเป็น treasury_transactions)
 const handleWithdrawSubmit = async () => {
   if (!withdrawForm.value.amount || withdrawForm.value.amount <= 0) return alert('กรุณาระบุจำนวนเงินที่ถูกต้อง')
   if (!withdrawForm.value.reason.trim()) return alert('กรุณาระบุเหตุผลในการเบิกเงิน')
@@ -1063,7 +1110,6 @@ const handleWithdrawSubmit = async () => {
   const leaderName = currentUserProfile.value?.character_name || 'หัวหน้าแก๊ง'
 
   try {
-    // บันทึกประวัติการเบิกเงินลงในตาราง treasury_transactions
     const { error } = await client.from('treasury_transactions').insert({
       type: 'withdraw',
       amount: withdrawForm.value.amount,
@@ -1172,22 +1218,24 @@ const handleCancelLeave = async () => {
 
 const handleFileSelect = (event, mode) => {
   const file = event.target.files[0]
-  if (mode === 'daily') dailyFile.value = file
   if (mode === 'airdrop') airdropFile.value = file
 }
 
+// อัปโหลดหลักฐานแอร์ดรอปไปยังตาราง airdrop_checkins
 const handleCheckin = async (mode) => {
   const userId = currentUserProfile.value?.id
   if (!userId) return alert('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง')
 
-  if (mode === 'daily') {
-    if (!dailyFile.value) return alert('กรุณาเลือกรูปหลักฐานเช็คชื่อวันก่อนครับ')
-    isUploadingDaily.value = true
-    const success = await store.submitCheckin(userId, dailyForm.value.type, dailyFile.value)
-    isUploadingDaily.value = false
-    if (success) alert('ส่งหลักฐานเช็คชื่อวันเรียบร้อยแล้ว!')
-    else alert('เกิดข้อผิดพลาดในการส่งหลักฐาน')
-  } else if (mode === 'airdrop') {
+  // เช็คเวลาปัจจุบันก่อน หากเกิน 22:15 น. ไม่ให้ส่ง
+  const now = new Date()
+  const hours = now.getHours()
+  const minutes = now.getMinutes()
+  
+  if (hours > 22 || (hours === 22 && minutes >= 15)) {
+    return alert('ขณะนี้เกินเวลาเดดไลน์ 22:15 น. แล้ว ไม่สามารถส่งหลักฐานแอร์ดรอปได้')
+  }
+
+  if (mode === 'airdrop') {
     if (!airdropFile.value) return alert('กรุณาเลือกรูปหลักฐานแอร์ดรอปก่อนครับ')
     isUploadingAirdrop.value = true
     try {
@@ -1196,19 +1244,42 @@ const handleCheckin = async (mode) => {
       if (uploadErr) throw uploadErr
 
       const publicUrl = client.storage.from('checkins').getPublicUrl(fileName).data.publicUrl
+      
       const { error: insertErr } = await client.from('airdrop_checkins').insert({
         user_id: userId,
-        image_url: publicUrl
+        image_url: publicUrl,
+        status: 'pending'
       })
-
       if (insertErr) throw insertErr
-      alert('ส่งหลักฐานเข้าร่วมแอร์ดรอปเรียบร้อยแล้ว!')
+
+      alert('ส่งหลักฐานเข้าร่วมแอร์ดรอปเรียบร้อยแล้ว! กรุณารอหัวแก๊งอนุมัติ')
+      airdropFile.value = null
+      await fetchAirdropCheckins()
     } catch (e) {
       console.error(e)
       alert('เกิดข้อผิดพลาดในการอัปโหลดหลักฐานแอร์ดรอป')
     } finally {
       isUploadingAirdrop.value = false
     }
+  }
+}
+
+// ฟังก์ชันสำหรับยศบริหาร/หัวแก๊ง เพื่อกดอนุมัติ/ปฏิเสธ แอร์ดรอป
+const handleApproveAirdrop = async (checkinId, userId, isApproved) => {
+  try {
+    const status = isApproved ? 'approved' : 'rejected'
+    const { error } = await client
+      .from('airdrop_checkins')
+      .update({ status: status })
+      .eq('id', checkinId)
+
+    if (error) throw error
+
+    alert(isApproved ? 'อนุมัติการลงแอร์ดรอปเรียบร้อยแล้ว' : 'ปฏิเสธการลงแอร์ดรอปเรียบร้อยแล้ว')
+    await fetchAirdropCheckins()
+  } catch (e) {
+    console.error('Approve Error:', e)
+    alert('เกิดข้อผิดพลาดในการอนุมัติ/ปฏิเสธ')
   }
 }
 
@@ -1286,13 +1357,21 @@ const getTicketStatusText = (status) => {
 const exportCSV = () => {
   const profiles = getArray(store.profiles)
   if (profiles.length === 0) return alert('ไม่มีข้อมูลสมาชิกให้ส่งออก')
-  const headers = 'Character Name,Role,Phone,Fine Balance,Leave Status\n'
-  const rows = profiles.map(p => `"${p.character_name}","${p.role}","${p.phone_number || ''}","${p.fine_balance || 0}","${p.leave_status ? 'Leave' : 'Normal'}"`).join('\n')
+  const headers = 'Character Name,Role,Phone,Fine Balance,Leave Status,Airdrop Status\n'
+  const rows = profiles.map(p => {
+    let airdropText = 'Did Not Check In'
+    const status = getAirdropStatus(p)
+    if (status === 'approved') airdropText = 'Approved'
+    else if (status === 'pending') airdropText = 'Pending Approval'
+    else if (status === 'leave') airdropText = 'On Leave'
+
+    return `"${p.character_name}","${p.role}","${p.phone_number || ''}","${p.fine_balance || 0}","${p.leave_status ? 'Leave' : 'Normal'}","${airdropText}"`
+  }).join('\n')
   const blob = new Blob([headers + rows], { type: 'text/csv' })
   const url = window.URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = 'gang_members.csv'
+  a.download = 'airdrop_checkin_report.csv'
   a.click()
 }
 </script>
