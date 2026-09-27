@@ -24,7 +24,6 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <!-- แสดงข้อมูลบัญชีผู้ใช้งานจริง -->
           <div class="flex items-center gap-3 bg-slate-950/80 px-3 py-1.5 rounded-lg border border-slate-800 backdrop-blur">
             <div class="text-right">
               <p class="text-xs font-bold text-white">{{ currentUserProfile?.character_name || 'ไม่พบข้อมูลผู้ใช้' }}</p>
@@ -39,7 +38,6 @@
             </div>
           </div>
 
-          <!-- ปุ่มออกจากระบบ (Logout) -->
           <button 
             @click="handleLogout" 
             class="bg-slate-800 hover:bg-red-600/20 text-slate-300 hover:text-red-400 border border-slate-700 hover:border-red-500/40 text-xs px-3 py-2 rounded-lg transition flex items-center gap-1.5 cursor-pointer"
@@ -71,7 +69,6 @@
 
       <!-- Tab 1: รายชื่อสมาชิก & การเช็คชื่อ -->
       <div v-if="activeTab === 'members'" class="space-y-6">
-        <!-- 1.1 สวิตช์สลับสถานะแจ้งลาหยุดประจำวัน -->
         <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl">
           <div>
             <h3 class="text-sm font-bold text-white flex items-center gap-2">
@@ -97,7 +94,6 @@
           </button>
         </div>
 
-        <!-- คิวรออนุมัติคำขอลา (เฉพาะ หัวหน้า / รองหัวหน้า) -->
         <div v-if="isManagement && pendingLeaveRequests.length > 0" class="bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl">
           <h2 class="text-lg font-bold text-amber-400 mb-4">🌴 รายการคำขอลาหยุดรออนุมัติ ({{ pendingLeaveRequests.length }})</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -117,9 +113,7 @@
           </div>
         </div>
 
-        <!-- 1.2 ฟอร์มเช็คชื่อแบ่ง 2 ประเภท -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- เช็คชื่อประจำวัน -->
           <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
             <h2 class="text-base font-bold text-white mb-1 flex items-center gap-2">
               <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
@@ -154,7 +148,6 @@
             </form>
           </div>
 
-          <!-- เช็คชื่อแอร์ดรอป -->
           <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
             <h2 class="text-base font-bold text-amber-400 mb-1 flex items-center gap-2">
               <span class="w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping"></span>
@@ -183,7 +176,6 @@
           </div>
         </div>
 
-        <!-- คิวรออนุมัติเช็คชื่อ -->
         <div v-if="isManagement && pendingCheckins.length > 0" class="bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl">
           <h2 class="text-lg font-bold text-amber-400 mb-4">⏳ รายการเช็คชื่อรออนุมัติ ({{ pendingCheckins.length }})</h2>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -206,7 +198,6 @@
           </div>
         </div>
 
-        <!-- ตารางรายชื่อสมาชิกแก๊ง -->
         <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl">
           <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
             <h2 class="font-bold text-white">รายชื่อสมาชิกทั้งหมด</h2>
@@ -251,7 +242,6 @@
                       {{ member.is_online ? 'อยู่ในเมือง' : 'นอกเมือง' }}
                     </span>
                   </td>
-
                   <td class="p-4">
                     <div v-if="store.getLatestCheckinImage && store.getLatestCheckinImage(member.id)" class="flex items-center gap-2">
                       <a 
@@ -264,7 +254,6 @@
                     </div>
                     <span v-else class="text-xs text-slate-600 italic">ไม่มีหลักฐาน</span>
                   </td>
-
                   <td v-if="isManagement" class="p-4 text-center">
                     <button 
                       @click="handleDeleteMember(member)" 
@@ -280,7 +269,7 @@
         </div>
       </div>
 
-      <!-- Tab 2: กฎแก๊ง -->
+      <!-- Tab 2: กฎแก๊ง PUKPIK (แยกปรับปรุงทีละกฎ) -->
       <div v-if="activeTab === 'rules'" class="space-y-6">
         <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
           <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
@@ -291,29 +280,40 @@
               <p class="text-xs text-slate-400 mt-1">สมาชิกทุกคนต้องรับทราบและปฏิบัติตามอย่างเคร่งครัด</p>
             </div>
             <button 
-              v-if="isManagement && !isEditingRules" 
-              @click="isEditingRules = true" 
-              class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-4 py-2 rounded-lg border border-slate-700 cursor-pointer transition"
+              v-if="isManagement" 
+              @click="openAddRuleModal" 
+              class="bg-red-600 hover:bg-red-700 text-white text-xs px-4 py-2 rounded-lg font-bold transition shadow-lg shadow-red-600/20 cursor-pointer"
             >
-              ✏️ แก้ไขกฎแก๊ง
+              ➕ เพิ่มกฎข้อใหม่
             </button>
           </div>
 
-          <div v-if="isEditingRules" class="space-y-4">
-            <textarea 
-              v-model="rulesInput" 
-              rows="12" 
-              class="w-full bg-slate-950 border border-slate-800 rounded-lg p-4 text-sm text-white focus:outline-none focus:border-red-500 font-mono"
-              placeholder="พิมพ์กฎระเบียบแก๊งที่นี่..."
-            ></textarea>
-            <div class="flex gap-2 justify-end">
-              <button @click="isEditingRules = false" class="bg-slate-800 text-slate-300 text-xs px-4 py-2 rounded-lg cursor-pointer">ยกเลิก</button>
-              <button @click="saveGangRules" class="bg-red-600 hover:bg-red-700 text-white text-xs px-4 py-2 rounded-lg cursor-pointer shadow-lg shadow-red-600/20">บันทึกกฎแก๊ง</button>
-            </div>
-          </div>
+          <!-- แสดงผลรายการกฎเป็นข้อๆ แยกการ์ดสวยงาม -->
+          <div class="grid grid-cols-1 gap-4">
+            <div 
+              v-for="rule in getArray(store.rulesList)" 
+              :key="rule.id" 
+              class="bg-slate-950/60 p-5 rounded-xl border border-slate-800/80 hover:border-slate-700 transition flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+            >
+              <div class="space-y-1">
+                <div class="flex items-center gap-2">
+                  <span class="bg-red-600/20 text-red-400 border border-red-500/30 font-bold px-2.5 py-0.5 rounded text-xs font-mono">
+                    กฎข้อที่ {{ rule.rule_number }}
+                  </span>
+                  <h3 class="font-bold text-white text-base">{{ rule.title }}</h3>
+                </div>
+                <p class="text-sm text-slate-300 leading-relaxed pl-1 pt-1">{{ rule.content }}</p>
+              </div>
 
-          <div v-else class="prose prose-invert max-w-none text-slate-300 leading-relaxed whitespace-pre-line text-sm bg-slate-950/50 p-6 rounded-lg border border-slate-800/80">
-            {{ currentRulesContent || 'ยังไม่มีการกำหนดกฎแก๊งในขณะนี้' }}
+              <div v-if="isManagement" class="flex items-center gap-2 shrink-0">
+                <button @click="openEditRuleModal(rule)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded border border-slate-700 cursor-pointer">✏️ แก้ไข</button>
+                <button @click="handleDeleteRule(rule.id)" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs px-3 py-1.5 rounded border border-red-500/30 cursor-pointer">🗑️ ลบ</button>
+              </div>
+            </div>
+
+            <div v-if="getArray(store.rulesList).length === 0" class="p-8 text-center text-slate-500 text-sm">
+              ยังไม่มีการกำหนดกฎแก๊งในขณะนี้
+            </div>
           </div>
         </div>
       </div>
@@ -338,7 +338,7 @@
               </p>
             </div>
             <div class="mt-4 p-4 bg-slate-950/80 rounded-lg border border-slate-800 text-xs text-slate-400">
-              ℹ️ หากต้องการชำระค่าปรับ กรุณาโอนเงินเข้าคลังแก๊งแล้วแจ้งหัวหน้าแก๊งเพื่อตัดยอดหนี้สินออก
+              ℹ️ หากต้องการชำระค่าปรับ สามารถแนบสลิปส่งเงินได้ที่เมนู <b>"คลังเงินแก๊ง"</b> เพื่อให้ยศบริหารตัดยอดหนี้ให้ครับ
             </div>
           </div>
         </div>
@@ -362,51 +362,81 @@
         </div>
       </div>
 
-      <!-- Tab 4: คลังเงินแก๊ง -->
+      <!-- Tab 4: คลังเงินแก๊ง (ปรับแก้: ส่งสลิปฝากเงิน & การอนุมัติ) -->
       <div v-if="activeTab === 'treasury'" class="space-y-6">
         <div class="bg-gradient-to-r from-slate-900/90 via-slate-900/90 to-red-950/80 border border-slate-800 rounded-xl p-6 shadow-xl flex justify-between items-center backdrop-blur">
           <div>
             <p class="text-xs text-slate-400 mb-1">ยอดเงินคงเหลือในคลังแก๊ง</p>
             <p class="text-4xl font-black text-green-400 font-mono drop-shadow">${{ (getVal(store.totalBalance) || 0).toLocaleString() }}</p>
           </div>
-          <div class="text-right text-xs text-slate-500">
-            <p v-if="!isLeader" class="text-amber-400/80">🔒 สมาชิกดูได้อย่างเดียว (เฉพาะหัวหน้าเท่านั้นที่ถอน/ฝากได้)</p>
-          </div>
         </div>
 
-        <div v-if="isLeader" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
-          <h2 class="text-lg font-bold text-white mb-4">ทำรายการ ฝาก / ถอน เงิน</h2>
-          <form @submit.prevent="handleTreasury" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label class="block text-xs text-slate-400 mb-1">ประเภท</label>
-              <select v-model="treasuryForm.type" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500">
-                <option value="deposit">ฝากเงินเข้า (+)</option>
-                <option value="withdraw">ถอนเงินออก (-)</option>
-              </select>
-            </div>
+        <!-- ฟอร์มสำหรับสมาชิกทุกคนในการส่งสลิปโอนเงินเข้าคลัง -->
+        <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
+          <h2 class="text-lg font-bold text-white mb-1">💳 นำส่งสลิปเงินเข้าคลังแก๊ง</h2>
+          <p class="text-xs text-slate-400 mb-4">สมาชิกสามารถแนบสลิปเพื่อขอฝากเงิน, โดเนท หรือชำระค่าปรับได้ทันที</p>
+          
+          <form @submit.prevent="handleDepositSubmit" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label class="block text-xs text-slate-400 mb-1">จำนวนเงิน ($)</label>
-              <input v-model.number="treasuryForm.amount" type="number" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
+              <input v-model.number="depositForm.amount" type="number" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
             </div>
+
             <div>
-              <label class="block text-xs text-slate-400 mb-1">หมายเหตุ / เหตุผล</label>
-              <input v-model="treasuryForm.description" type="text" placeholder="เช่น ค่าสภา" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
+              <label class="block text-xs text-slate-400 mb-1">หมวดหมู่รายการ</label>
+              <select v-model="depositForm.category" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500">
+                <option value="ส่งเงินแก๊ง">ส่งเงินแก๊ง</option>
+                <option value="โดเนทให้แก๊ง">โดเนทให้แก๊ง</option>
+                <option value="จ่ายค่าปรับการเช็คชื่อ">จ่ายค่าปรับการเช็คชื่อ</option>
+                <option value="จ่ายค่าปรับแอร์ดรอป">จ่ายค่าปรับแอร์ดรอป</option>
+              </select>
             </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">แนบรูปสลิปโอนเงิน</label>
+              <input type="file" accept="image/*" @change="handleDepositFileSelect" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-300 file:bg-slate-800 file:text-slate-200 file:border-0 file:rounded cursor-pointer" />
+            </div>
+
             <div class="flex items-end">
-              <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg text-sm transition cursor-pointer shadow-lg shadow-green-600/20">
-                บันทึกรายการ
+              <button type="submit" :disabled="isUploadingDeposit" class="w-full bg-green-600 hover:bg-green-700 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-sm transition cursor-pointer shadow-lg shadow-green-600/20">
+                {{ isUploadingDeposit ? 'กำลังส่งสลิป...' : 'ส่งสลิปโอนเงิน' }}
               </button>
             </div>
           </form>
         </div>
 
+        <!-- กล่องคิวรายการสลิปส่งเงินรออนุมัติ (เฉพาะ หัวหน้า / รองหัวหน้า) -->
+        <div v-if="isManagement && pendingDeposits.length > 0" class="bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl">
+          <h2 class="text-lg font-bold text-amber-400 mb-4">💳 รายการสลิปส่งเงินรออนุมัติ ({{ pendingDeposits.length }})</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-for="dep in pendingDeposits" :key="dep.id" class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="font-bold text-white">{{ dep.profiles?.character_name || 'สมาชิก' }}</p>
+                  <p class="text-xs text-amber-400 font-semibold">{{ dep.category }}</p>
+                  <p class="text-lg font-mono font-bold text-green-400 mt-1">${{ Number(dep.amount).toLocaleString() }}</p>
+                </div>
+                <span class="text-[10px] text-slate-500">{{ new Date(dep.created_at).toLocaleTimeString() }}</span>
+              </div>
+              <a :href="dep.slip_url" target="_blank" class="block">
+                <img :src="dep.slip_url" class="w-full h-36 object-cover rounded-md border border-slate-800 hover:opacity-90 transition" />
+              </a>
+              <div class="flex gap-2 pt-2 border-t border-slate-800">
+                <button @click="handleApproveDeposit(dep, true)" class="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs py-1.5 rounded font-medium cursor-pointer">อนุมัติเงินเข้าคลัง</button>
+                <button @click="handleApproveDeposit(dep, false)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-1.5 rounded cursor-pointer">ปฏิเสธ</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ประวัติการธุรกรรมคลังเงิน -->
         <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl">
           <div class="p-4 border-b border-slate-800 font-bold text-white bg-slate-900/50">ประวัติการธุรกรรม</div>
           <div class="divide-y divide-slate-800/80">
             <div v-for="log in getArray(store.treasuryLogs)" :key="log.id" class="p-4 flex justify-between items-center hover:bg-slate-800/30 transition">
               <div>
                 <p class="font-medium text-white">{{ log.description }}</p>
-                <p class="text-xs text-slate-500">โดย: {{ log.created_by }} • {{ new Date(log.created_at).toLocaleString() }}</p>
+                <p class="text-xs text-slate-500">ผู้อนุมัติ/ทำรายการ: {{ log.created_by }} • {{ new Date(log.created_at).toLocaleString() }}</p>
               </div>
               <p :class="log.type === 'deposit' ? 'text-green-400' : 'text-red-400'" class="font-mono font-bold text-lg">
                 {{ log.type === 'deposit' ? '+' : '-' }}${{ Number(log.amount).toLocaleString() }}
@@ -416,10 +446,10 @@
         </div>
       </div>
 
-      <!-- Tab 5: คลังของแก๊ง -->
+      <!-- Tab 5: คลังของแก๊ง (ปรับแก้: เพิ่มยศคนเก็บของแก๊ง & ระบุจำนวนบวกลบไอเทม) -->
       <div v-if="activeTab === 'inventory'" class="space-y-6">
-        <div v-if="isManagement" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
-          <h2 class="text-lg font-bold text-white mb-4">เพิ่มไอเทมเข้าคลังแก๊ง</h2>
+        <div v-if="canManageInventory" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
+          <h2 class="text-lg font-bold text-white mb-4">เพิ่มไอเทมใหม่เข้าคลังแก๊ง</h2>
           <form @submit.prevent="handleAddInventory" class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
               <label class="block text-xs text-slate-400 mb-1">ชื่อไอเทม</label>
@@ -433,25 +463,13 @@
               <label class="block text-xs text-slate-400 mb-1">จำนวนเริ่มต้น</label>
               <input v-model.number="itemForm.quantity" type="number" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500" />
             </div>
-
             <div>
               <label class="block text-xs text-slate-400 mb-1">รูปไอเทม (ถ้ามี)</label>
-              <input 
-                type="file" 
-                accept="image/*" 
-                @change="handleItemFileSelect" 
-                class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-300 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-slate-800 file:text-slate-200 cursor-pointer" 
-              />
+              <input type="file" accept="image/*" @change="handleItemFileSelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-300 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-slate-800 file:text-slate-200 cursor-pointer" />
             </div>
-
             <div class="flex items-end">
-              <button 
-                type="submit" 
-                :disabled="isUploadingItem"
-                class="w-full bg-red-600 hover:bg-red-700 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-sm transition cursor-pointer shadow-lg shadow-red-600/20"
-              >
-                <span v-if="isUploadingItem">กำลังบันทึก...</span>
-                <span v-else>เพิ่มเข้าคลัง</span>
+              <button type="submit" :disabled="isUploadingItem" class="w-full bg-red-600 hover:bg-red-700 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-sm transition cursor-pointer shadow-lg shadow-red-600/20">
+                {{ isUploadingItem ? 'กำลังบันทึก...' : 'เพิ่มเข้าคลัง' }}
               </button>
             </div>
           </form>
@@ -462,37 +480,43 @@
             <span class="text-2xl">📦</span>
             <div>
               <h3 class="font-bold text-white text-sm">คลังไอเทมแก๊ง</h3>
-              <p class="text-xs text-slate-400">คุณสามารถตรวจสอบจำนวนไอเทมในคลังได้ (หากต้องการเพิ่ม/ขอเบิกของ กรุณายื่นคำร้อง)</p>
+              <p class="text-xs text-slate-400">คุณสามารถตรวจสอบจำนวนไอเทมในคลังได้ (หากต้องการขอเบิกของ กรุณายื่นคำร้องหรือติดต่อคนเก็บของแก๊ง)</p>
             </div>
           </div>
         </div>
 
+        <!-- แสดงการ์ดไอเทม พร้อมปุ่มปรับจำนวนระบุได้ -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div v-for="item in getArray(store.inventory)" :key="item.id" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl flex flex-col justify-between hover:border-red-500/50 transition duration-300">
             <div class="relative h-40 bg-slate-950 flex items-center justify-center border-b border-slate-800/80 overflow-hidden group">
-              <img 
-                v-if="item.image_url" 
-                :src="item.image_url" 
-                class="w-full h-full object-cover group-hover:scale-105 transition duration-300" 
-              />
-              <div v-else class="text-4xl text-slate-700 select-none">
-                📦
-              </div>
+              <img v-if="item.image_url" :src="item.image_url" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+              <div v-else class="text-4xl text-slate-700 select-none">📦</div>
               <span class="absolute top-2 left-2 text-[10px] bg-slate-900/80 backdrop-blur text-slate-300 px-2 py-0.5 rounded border border-slate-700/80 uppercase font-bold">
                 {{ item.category }}
               </span>
             </div>
 
-            <div class="p-4">
-              <h3 class="font-bold text-base text-white truncate">{{ item.item_name }}</h3>
-              <p class="text-2xl font-mono font-black text-red-500 my-1">
-                {{ Number(item.quantity).toLocaleString() }} <span class="text-xs text-slate-500 font-normal">ชิ้น</span>
-              </p>
+            <div class="p-4 space-y-3">
+              <div>
+                <h3 class="font-bold text-base text-white truncate">{{ item.item_name }}</h3>
+                <p class="text-2xl font-mono font-black text-red-500 my-1">
+                  {{ Number(item.quantity).toLocaleString() }} <span class="text-xs text-slate-500 font-normal">ชิ้น</span>
+                </p>
+              </div>
 
-              <div v-if="isManagement" class="flex items-center gap-2 pt-3 mt-2 border-t border-slate-800/80">
-                <button @click="store.updateInventoryQty(item.id, item.quantity - 1)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded font-bold text-sm cursor-pointer">-</button>
-                <button @click="store.updateInventoryQty(item.id, item.quantity + 1)" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded font-bold text-sm cursor-pointer">+</button>
-                <button @click="store.deleteInventoryItem(item.id)" class="ml-auto text-xs text-red-400 hover:underline cursor-pointer">ลบ</button>
+              <!-- ปุ่มปรับจำนวนไอเทมแบบใส่จำนวนได้ตามระบุ -->
+              <div v-if="canManageInventory" class="pt-3 border-t border-slate-800/80 space-y-2">
+                <div class="flex gap-1.5">
+                  <button @click="openQtyAdjustModal(item, 'add')" class="flex-1 bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/30 text-xs py-1 rounded font-bold cursor-pointer transition">
+                    + เพิ่มของ
+                  </button>
+                  <button @click="openQtyAdjustModal(item, 'sub')" class="flex-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-500/30 text-xs py-1 rounded font-bold cursor-pointer transition">
+                    - เบิกออก
+                  </button>
+                </div>
+                <button @click="store.deleteInventoryItem(item.id)" class="w-full text-center text-xs text-slate-500 hover:text-red-400 hover:underline cursor-pointer py-0.5">
+                  ลบรายการนี้
+                </button>
               </div>
             </div>
           </div>
@@ -569,27 +593,65 @@
       </div>
     </main>
 
-    <!-- Modal ป๊อปอัพ ยื่นคำขอลาหยุด -->
+    <!-- Modal 1: ป๊อปอัพ ยื่นคำขอลาหยุด -->
     <div v-if="showLeaveModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
       <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-xl p-6 space-y-4 shadow-2xl">
-        <h3 class="text-lg font-bold text-white flex items-center gap-2">
-          🌴 ยื่นเรื่องขอลาหยุด
-        </h3>
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">🌴 ยื่นเรื่องขอลาหยุด</h3>
         <p class="text-xs text-slate-400">กรุณาระบุสาเหตุการลา คำขอจะส่งไปยังหัวหน้า/รองหัวหน้าแก๊งเพื่อพิจารณาอนุมัติ</p>
-        
         <div>
           <label class="block text-xs text-slate-300 mb-1">สาเหตุการลา</label>
-          <textarea 
-            v-model="leaveReason" 
-            rows="3" 
-            placeholder="เช่น ติดภารกิจต่างจังหวัด, ไม่สบาย" 
-            class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-red-500"
-          ></textarea>
+          <textarea v-model="leaveReason" rows="3" placeholder="เช่น ติดภารกิจต่างจังหวัด, ไม่สบาย" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-red-500"></textarea>
         </div>
-
         <div class="flex gap-2 justify-end pt-2">
           <button @click="showLeaveModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-lg cursor-pointer">ยกเลิก</button>
           <button @click="handleLeaveSubmit" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-amber-600/20">ยื่นคำขอลา</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 2: ป๊อปอัพ ปรับจำนวนไอเทม (บวก/ลบ ทีละหลายชิ้น) -->
+    <div v-if="showQtyModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-sm rounded-xl p-6 space-y-4 shadow-2xl">
+        <h3 class="text-lg font-bold text-white">
+          {{ qtyModalMode === 'add' ? '➕ เพิ่มจำนวนไอเทม' : '➖ เบิกออก/ลดจำนวนไอเทม' }}
+        </h3>
+        <p class="text-xs text-slate-400">ไอเทม: <span class="text-white font-bold">{{ selectedQtyItem?.item_name }}</span> (คงเหลือ {{ selectedQtyItem?.quantity }} ชิ้น)</p>
+        
+        <div>
+          <label class="block text-xs text-slate-300 mb-1">กรอกจำนวนที่ต้องการ {{ qtyModalMode === 'add' ? 'เพิ่ม' : 'ลด' }}</label>
+          <input v-model.number="customQtyAmount" type="number" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-red-500" />
+        </div>
+
+        <div class="flex gap-2 justify-end pt-2">
+          <button @click="showQtyModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-lg cursor-pointer">ยกเลิก</button>
+          <button @click="submitCustomQty" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20">ยืนยัน</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 3: ป๊อปอัพ เพิ่ม/แก้ไข กฎแก๊งรายข้อ -->
+    <div v-if="showRuleModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-xl p-6 space-y-4 shadow-2xl">
+        <h3 class="text-lg font-bold text-white">{{ isEditingSingleRule ? '✏️ แก้ไขกฎแก๊ง' : '➕ เพิ่มกฎแก๊งข้อใหม่' }}</h3>
+        
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">ลำดับข้อ (เช่น 1, 2, 3)</label>
+            <input v-model.number="ruleForm.rule_number" type="number" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">หัวข้อกฎ</label>
+            <input v-model="ruleForm.title" type="text" placeholder="เช่น การเข้าร่วมกิจกรรมสภา" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">รายละเอียดกฎระเบียบ</label>
+            <textarea v-model="ruleForm.content" rows="4" placeholder="พิมพ์เนื้อหากฎระเบียบอย่างละเอียดที่นี่..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-red-500"></textarea>
+          </div>
+        </div>
+
+        <div class="flex gap-2 justify-end pt-2">
+          <button @click="showRuleModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-lg cursor-pointer">ยกเลิก</button>
+          <button @click="handleSaveSingleRule" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20">บันทึกกฎ</button>
         </div>
       </div>
     </div>
@@ -615,15 +677,27 @@ const activeTab = ref('members')
 const showLeaveModal = ref(false)
 const leaveReason = ref('')
 
-// State กฎแก๊ง
-const isEditingRules = ref(false)
-const rulesInput = ref('')
-const currentRulesContent = ref('')
+// State สลิปส่งเงินเข้าคลัง
+const depositFile = ref(null)
+const isUploadingDeposit = ref(false)
+const depositForm = ref({ amount: 1000, category: 'ส่งเงินแก๊ง' })
+
+// State สำหรับปรับจำนวนไอเทมคลัง
+const showQtyModal = ref(false)
+const selectedQtyItem = ref(null)
+const qtyModalMode = ref('add')
+const customQtyAmount = ref(1)
+
+// State กฎแก๊งรายข้อ
+const showRuleModal = ref(false)
+const isEditingSingleRule = ref(false)
+const selectedRuleId = ref(null)
+const ruleForm = ref({ rule_number: 1, title: '', content: '' })
 
 // State ประวัติค่าปรับส่วนตัว
 const myFineLogs = ref([])
 
-// State ไฟล์อัปโหลดเช็คชื่อ
+// State ไฟล์อัปโหลด
 const dailyFile = ref(null)
 const airdropFile = ref(null)
 
@@ -634,7 +708,6 @@ const isUploadingItem = ref(false)
 const dailyForm = ref({ type: 'in' })
 const itemSelectedFile = ref(null)
 
-const treasuryForm = ref({ type: 'deposit', amount: 1000, description: '' })
 const itemForm = ref({ name: '', category: 'ทั่วไป', quantity: 1 })
 const ticketForm = ref({ title: '', category: 'เบิกของ/เงิน', detail: '' })
 
@@ -656,8 +729,9 @@ onMounted(async () => {
   if (store.fetchAllData) {
     await store.fetchAllData()
   }
+  if (store.fetchPendingDeposits) await store.fetchPendingDeposits()
+  if (store.fetchRulesList) await store.fetchRulesList()
 
-  await fetchGangRules()
   await fetchMyFineLogs()
 })
 
@@ -680,26 +754,110 @@ const currentUserRole = computed(() => currentUserProfile.value?.role || 'member
 const isLeader = computed(() => currentUserRole.value === 'leader')
 const isManagement = computed(() => currentUserRole.value === 'leader' || currentUserRole.value === 'co_leader')
 
-const pendingCheckins = computed(() => {
-  const checkins = getArray(store.checkins)
-  return checkins.filter(c => c.status === 'pending')
-})
+// เพิ่มสิทธิ์คนเก็บของแก๊ง (inventory_keeper)
+const isInventoryKeeper = computed(() => currentUserRole.value === 'inventory_keeper')
+const canManageInventory = computed(() => isManagement.value || isInventoryKeeper.value)
 
-const pendingLeaveRequests = computed(() => {
-  const requests = getArray(store.leaveRequests)
-  return requests.filter(r => r.status === 'pending')
-})
+const pendingCheckins = computed(() => getArray(store.checkins).filter(c => c.status === 'pending'))
+const pendingLeaveRequests = computed(() => getArray(store.leaveRequests).filter(r => r.status === 'pending'))
+const pendingDeposits = computed(() => getArray(store.pendingDeposits))
 
 const tabs = computed(() => [
   { id: 'members', label: 'สมาชิก & เช็คชื่อ', badge: pendingCheckins.value.length + (isManagement.value ? pendingLeaveRequests.value.length : 0) },
   { id: 'rules', label: '📜 กฎแก๊ง PUKPIK' },
   { id: 'profile', label: '👤 โปรไฟล์ & ค่าปรับ' },
-  { id: 'treasury', label: 'คลังเงินแก๊ง' },
+  { id: 'treasury', label: 'คลังเงินแก๊ง', badge: isManagement.value ? pendingDeposits.value.length : 0 },
   { id: 'inventory', label: 'คลังของแก๊ง' },
   { id: 'tickets', label: 'คำร้องสมาชิก' }
 ])
 
-// ระบบยื่นขอลาหยุด
+// ระบบส่งสลิปเงินเข้าคลังแก๊ง
+const handleDepositFileSelect = (e) => {
+  depositFile.value = e.target.files[0]
+}
+
+const handleDepositSubmit = async () => {
+  if (!depositFile.value) return alert('กรุณาแนบรูปสลิปโอนเงินด้วยครับ')
+  if (!currentUserProfile.value?.id) return alert('ไม่พบข้อมูลผู้ใช้')
+
+  isUploadingDeposit.value = true
+  const success = await store.submitDepositSlip(currentUserProfile.value.id, depositForm.value.amount, depositForm.value.category, depositFile.value)
+  isUploadingDeposit.value = false
+
+  if (success) {
+    alert('ส่งสลิปโอนเงินเรียบร้อยแล้ว! กรุณารอหัวหน้าหรือรองหัวหน้าอนุมัติ')
+    depositForm.value.amount = 1000
+    depositFile.value = null
+  } else {
+    alert('เกิดข้อผิดพลาดในการส่งสลิปโอนเงิน')
+  }
+}
+
+const handleApproveDeposit = async (dep, isApproved) => {
+  const reviewerName = currentUserProfile.value?.character_name || 'ผู้ดูแล'
+  const success = await store.approveDeposit(dep, isApproved, reviewerName)
+  if (success) {
+    alert(isApproved ? 'อนุมัติเงินเข้าคลังเรียบร้อยแล้ว' : 'ปฏิเสธสลิปโอนเงินเรียบร้อยแล้ว')
+  }
+}
+
+// ระบบจัดการจำนวนไอเทมในคลัง (ระบุจำนวนได้)
+const openQtyAdjustModal = (item, mode) => {
+  selectedQtyItem.value = item
+  qtyModalMode.value = mode
+  customQtyAmount.value = 1
+  showQtyModal.value = true
+}
+
+const submitCustomQty = async () => {
+  if (!selectedQtyItem.value || customQtyAmount.value <= 0) return
+  let newQty = selectedQtyItem.value.quantity
+
+  if (qtyModalMode.value === 'add') {
+    newQty += customQtyAmount.value
+  } else {
+    newQty = Math.max(0, newQty - customQtyAmount.value)
+  }
+
+  await store.updateInventoryQty(selectedQtyItem.value.id, newQty)
+  showQtyModal.value = false
+  alert(`ปรับเปลี่ยนจำนวนไอเทม "${selectedQtyItem.value.item_name}" เรียบร้อยแล้ว`)
+}
+
+// ระบบจัดการกฎแก๊งรายข้อ
+const openAddRuleModal = () => {
+  isEditingSingleRule.value = false
+  ruleForm.value = { rule_number: getArray(store.rulesList).length + 1, title: '', content: '' }
+  showRuleModal.value = true
+}
+
+const openEditRuleModal = (rule) => {
+  isEditingSingleRule.value = true
+  selectedRuleId.value = rule.id
+  ruleForm.value = { rule_number: rule.rule_number, title: rule.title, content: rule.content }
+  showRuleModal.value = true
+}
+
+const handleSaveSingleRule = async () => {
+  if (!ruleForm.value.title || !ruleForm.value.content) return alert('กรุณากรอกหัวข้อและเนื้อหากฎให้ครบถ้วน')
+
+  if (isEditingSingleRule.value) {
+    await store.updateRuleItem(selectedRuleId.value, ruleForm.value.title, ruleForm.value.content)
+  } else {
+    await store.addRuleItem(ruleForm.value.rule_number, ruleForm.value.title, ruleForm.value.content)
+  }
+  showRuleModal.value = false
+  alert('บันทึกกฎแก๊งเรียบร้อยแล้ว!')
+}
+
+const handleDeleteRule = async (id) => {
+  if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบกฎข้อนี้?')) {
+    await store.deleteRuleItem(id)
+    alert('ลบกฎเรียบร้อยแล้ว')
+  }
+}
+
+// ระบบอื่นๆ
 const handleLeaveSubmit = async () => {
   if (!leaveReason.value.trim()) return alert('กรุณาระบุสาเหตุการลาหยุดด้วยครับ')
   const userId = currentUserProfile.value?.id
@@ -715,7 +873,6 @@ const handleLeaveSubmit = async () => {
   }
 }
 
-// ระบบยกเลิกการลาหยุด
 const handleCancelLeave = async () => {
   if (confirm('คุณต้องการยกเลิกสถานะลาหยุดและกลับมาทำกิจกรรมแก๊งตามปกติหรือไม่?')) {
     const success = await store.cancelLeave(currentUserProfile.value?.id)
@@ -765,36 +922,6 @@ const handleCheckin = async (mode) => {
   }
 }
 
-const fetchGangRules = async () => {
-  try {
-    const { data } = await client.from('gang_rules').select('*').order('id', { ascending: false }).limit(1)
-    if (data && data.length > 0) {
-      currentRulesContent.value = data[0].content
-      rulesInput.value = data[0].content
-    }
-  } catch (e) {
-    console.error('Error fetching gang rules:', e)
-  }
-}
-
-const saveGangRules = async () => {
-  try {
-    const { error } = await client.from('gang_rules').insert({
-      content: rulesInput.value,
-      updated_by: currentUserProfile.value?.character_name || 'ผู้นำแก๊ง'
-    })
-    if (!error) {
-      currentRulesContent.value = rulesInput.value
-      isEditingRules.value = false
-      alert('อัปเดตกฎแก๊งเรียบร้อยแล้ว!')
-    } else {
-      alert('เกิดข้อผิดพลาดในการบันทึกกฎแก๊ง')
-    }
-  } catch (e) {
-    console.error(e)
-  }
-}
-
 const fetchMyFineLogs = async () => {
   if (!currentUserProfile.value?.id) return
   try {
@@ -816,14 +943,8 @@ const handleDeleteMember = async (member) => {
   }
 }
 
-const handleTreasury = async () => {
-  await store.addTreasuryTransaction(treasuryForm.value.type, treasuryForm.value.amount, treasuryForm.value.description, currentUserProfile.value?.character_name || 'หัวหน้าแก๊ง')
-  treasuryForm.value.description = ''
-  alert('บันทึกรายการคลังเงินเรียบร้อย!')
-}
-
 const handleAddInventory = async () => {
-  if (!isManagement.value) return alert('เฉพาะหัวหน้าแก๊งและรองหัวหน้าแก๊งเท่านั้น')
+  if (!canManageInventory.value) return alert('เฉพาะหัวหน้า, รองหัวหน้า และคนเก็บของแก๊งเท่านั้น')
   isUploadingItem.value = true
   const success = await store.addInventoryItem(itemForm.value.name, itemForm.value.category, itemForm.value.quantity, itemSelectedFile.value)
   isUploadingItem.value = false
@@ -849,12 +970,14 @@ const handleTicket = async () => {
 const getRoleBadge = (role) => {
   if (role === 'leader') return 'bg-red-500/20 text-red-400 border border-red-500/30'
   if (role === 'co_leader') return 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+  if (role === 'inventory_keeper') return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
   return 'bg-slate-800 text-slate-400 border border-slate-700'
 }
 
 const getRoleName = (role) => {
   if (role === 'leader') return 'หัวหน้าแก๊ง'
   if (role === 'co_leader') return 'รองหัวหน้า'
+  if (role === 'inventory_keeper') return 'คนเก็บของแก๊ง'
   return 'สมาชิก'
 }
 
