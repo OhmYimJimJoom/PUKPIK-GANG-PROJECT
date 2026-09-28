@@ -6,7 +6,7 @@
 
     <!-- 🎵 Floating Audio Player Widget -->
     <div class="fixed bottom-5 right-5 z-50 bg-slate-900/95 backdrop-blur-md border border-slate-700/80 p-3.5 rounded-2xl shadow-2xl flex flex-col gap-2.5 transition-all hover:border-red-500/50 group w-72 sm:w-80">
-      <audio ref="audioRef" :src="currentTrack.url" @ended="nextTrack" loop={false}></audio>
+      <audio ref="audioRef" :src="currentTrack.url" @ended="nextTrack" :loop="false"></audio>
       
       <!-- Top Track Info & Select Box -->
       <div class="flex items-center justify-between gap-2">
@@ -103,12 +103,12 @@
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">เบอร์โทรศัพท์ (Phone Number)</label>
+          <label class="block text-xs font-medium text-slate-400 mb-1">รหัสผ่าน (Password)</label>
           <input 
-            v-model="phoneNumber" 
+            v-model="username" 
             type="text" 
             required 
-            placeholder="ใช้เบอร์ในเมืองเช่น 973146"
+            placeholder="เริ่มต้นมาจะเป็นเบอร์ เช่น 973146"
             class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500 transition"
           />
         </div>
@@ -139,7 +139,7 @@ const router = useRouter()
 const store = useGangStore()
 
 const characterName = ref('')
-const phoneNumber = ref('')
+const username = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 
@@ -149,7 +149,7 @@ const isPlaying = ref(false)
 const volume = ref(0.3)
 const currentTrackIndex = ref(0)
 
-// 🎵 รายชื่อเพลงทั้งหมด (สามารถเพิ่ม/ลดลิงก์เพลงตรงนี้ได้เลย)
+// 🎵 รายชื่อเพลงทั้งหมด
 const playlist = ref([
   {
     title: 'ลื้อ ลื้อ',
@@ -163,7 +163,6 @@ const playlist = ref([
     title: 'ไม่รักดีกว่า',
     url: 'https://cdn.discordapp.com/attachments/1531701261689294999/1553656914141905026/Z9_Official_Music_Video.mp3?ex=6aba0b41&is=6ab8b9c1&hm=c3ff0441afb35b7528eea3e726f720c5541c6f88978fd56bdb5da4008a48892f&'
   },
- 
 ])
 
 const currentTrack = computed(() => playlist.value[currentTrackIndex.value] || playlist.value[0])
@@ -295,7 +294,7 @@ onBeforeUnmount(() => {
 })
 
 const handleLogin = async () => {
-  if (!characterName.value.trim() || !phoneNumber.value.trim()) {
+  if (!characterName.value.trim() || !username.value.trim()) {
     errorMessage.value = 'กรุณากรอกข้อมูลให้ครบถ้วน'
     return
   }
@@ -308,11 +307,11 @@ const handleLogin = async () => {
       .from('profiles')
       .select('*')
       .eq('character_name', characterName.value.trim())
-      .eq('phone_number', phoneNumber.value.trim())
+      .eq('username', username.value.trim())
       .single()
 
     if (error || !profile) {
-      throw new Error('ไม่พบข้อมูลสมาชิก หรือชื่อและเบอร์โทรศัพท์ไม่ถูกต้อง')
+      throw new Error('ไม่พบข้อมูลสมาชิก หรือชื่อและ Username ไม่ถูกต้อง')
     }
 
     if (process.client) {

@@ -145,7 +145,7 @@
             <h3 class="text-sm font-bold text-white flex items-center gap-2">
               🌴 แจ้งลาหยุดประจำวัน
             </h3>
-            <p class="text-xs text-slate-400 mt-1">ต้องระบุสาเหตุ และรอการอนุมัติจากหัวหน้า/รองหัวหน้าแก๊งก่อน จึงจะเว้นการโดนปรับแอร์ดรอป</p>
+            <p class="text-xs text-slate-400 mt-1">ต้องระบุสาเหตุ และรอการอนุมัติจากหัวหน้า/รองหัวหน้าแก๊งก่อน จึงจะเว้นการโดนปรับแอร์ดรอป (ระบบรีเซ็ตหลัง 03:00 น.)</p>
           </div>
           
           <button 
@@ -189,9 +189,9 @@
         <div class="max-w-2xl mx-auto bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl">
           <h2 class="text-base font-bold text-amber-400 mb-1 flex items-center gap-2">
             <span class="w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping"></span>
-            เช็คชื่อเข้าแอร์ดรอป (เดดไลน์ 22:15 น.)
+            เช็คชื่อเข้าแอร์ดรอป (เดดไลน์ 21:00 น.)
           </h2>
-          <p class="text-xs text-slate-400 mb-4">*ถ่ายรูปหลักฐานส่งก่อน 22:15 น. เพื่อให้หัวแก๊งกดอนุมัติ หากเลยเวลา 22:15 น. หรือไม่ได้รับการอนุมัติ จะโดนปรับ 100,000 บาท อัตโนมัติ*</p>
+          <p class="text-xs text-slate-400 mb-4">*ถ่ายรูปหลักฐานส่งก่อน 21:00 น. เพื่อให้หัวแก๊งกดอนุมัติ หากเลยเวลาหรือไม่ได้รับการอนุมัติ จะโดนปรับ 100,000 บาท อัตโนมัติ*</p>
           
           <!-- แสดงเตือนถ้าส่งไปแล้วแต่รออนุมัติอยู่ -->
           <div v-if="userPendingAirdrop" class="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg text-amber-400 text-xs">
@@ -282,7 +282,7 @@
                     ${{ (member.fine_balance || 0).toLocaleString() }}
                   </td>
                   
-                  <!-- สถานะการลงแอร์ดรอป (ลงแล้ว / ลา / ไม่ได้ลง) -->
+                  <!-- สถานะการลงแอร์ดรอป -->
                   <td class="p-4">
                     <span 
                       v-if="getAirdropStatus(member) === 'approved'"
@@ -397,8 +397,16 @@
               👤
             </div>
             <h2 class="text-xl font-bold text-white">{{ currentUserProfile?.character_name }}</h2>
-            <p class="text-xs text-slate-400 mt-1">ตำแหน่ง: {{ getRoleName(currentUserRole) }}</p>
+            <p class="text-xs text-slate-400 mt-1">Password: <span class="text-slate-300">{{ currentUserProfile?.username || '-' }}</span></p>
+            <p class="text-xs text-slate-400 mt-0.5">ตำแหน่ง: {{ getRoleName(currentUserRole) }}</p>
             <p class="text-xs text-slate-400">เบอร์โทร: {{ currentUserProfile?.phone_number || '-' }}</p>
+
+            <button 
+              @click="openEditProfileModal" 
+              class="mt-4 w-full bg-slate-800 hover:bg-slate-700 text-red-400 hover:text-red-300 border border-slate-700 hover:border-red-500/40 text-xs py-2 rounded-lg transition font-medium cursor-pointer flex items-center justify-center gap-1.5"
+            >
+              ✏️ แก้ไขข้อมูลโปรไฟล์
+            </button>
           </div>
 
           <div class="md:col-span-2 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl flex flex-col justify-between">
@@ -755,6 +763,36 @@
       </div>
     </div>
 
+    <!-- Modal 5: ป๊อปอัพ แก้ไขข้อมูลโปรไฟล์ (Character Name & Username & Phone) -->
+    <div v-if="showEditProfileModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-xl p-6 space-y-4 shadow-2xl">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">✏️ แก้ไขข้อมูลโปรไฟล์</h3>
+        <p class="text-xs text-slate-400">แก้ไขชื่อในเมือง ชื่อผู้ใช้ หรือเบอร์โทรศัพท์ของคุณ</p>
+        
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">รหัสผ่าน (Password)</label>
+            <input v-model="profileForm.username" type="text" placeholder="ระบุ Password" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">ชื่อในเมือง (Character Name)</label>
+            <input v-model="profileForm.character_name" type="text" placeholder="ระบุ ชื่อในเมือง" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">เบอร์โทรศัพท์</label>
+            <input v-model="profileForm.phone_number" type="text" placeholder="ระบุ เบอร์โทร" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-red-500" />
+          </div>
+        </div>
+
+        <div class="flex gap-2 justify-end pt-2">
+          <button @click="showEditProfileModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-lg cursor-pointer">ยกเลิก</button>
+          <button @click="handleUpdateProfile" :disabled="isUpdatingProfile" class="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-slate-700 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20">
+            {{ isUpdatingProfile ? 'กำลังบันทึก...' : 'บันทึกการเปลี่ยนแปลง' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -922,6 +960,11 @@ const showWithdrawModal = ref(false)
 const isWithdrawing = ref(false)
 const withdrawForm = ref({ amount: 1000, reason: '' })
 
+// State สำหรับแก้ไขโปรไฟล์
+const showEditProfileModal = ref(false)
+const isUpdatingProfile = ref(false)
+const profileForm = ref({ username: '', character_name: '', phone_number: '' })
+
 // State สำหรับปรับจำนวนไอเทมคลัง
 const showQtyModal = ref(false)
 const selectedQtyItem = ref(null)
@@ -960,6 +1003,49 @@ const fetchAirdropCheckins = async () => {
     }
   } catch (e) {
     console.error('Error fetching airdrop checkins:', e)
+  }
+}
+
+// 🕒 ระบบตรวจสอบและรีเซ็ตสถานะลาหยุดอัตโนมัติหลัง 03:00 น.
+const checkAndResetDailyLeave = async () => {
+  try {
+    const now = new Date()
+    // หาเวลา 03:00 น. ของวันปัจจุบัน
+    const resetTimeToday = new Date()
+    resetTimeToday.setHours(3, 0, 0, 0)
+
+    // คำนวณขอบเขตช่วงเวลาของการรีเซ็ตครั้งล่าสุด (ถ้าเวลาปัจจุบัน < 03:00 น. ขอบเขตจะเป็น 03:00 น. ของเมื่อวาน)
+    let lastResetThreshold = resetTimeToday
+    if (now < resetTimeToday) {
+      lastResetThreshold = new Date(resetTimeToday.getTime() - 24 * 60 * 60 * 1000)
+    }
+
+    // ตรวจสอบจาก LocalStorage ว่าเคยรีเซ็ตของรอบนี้ไปแล้วหรือยัง
+    const lastResetString = localStorage.getItem('last_leave_reset_timestamp')
+    const lastResetDate = lastResetString ? new Date(lastResetString) : null
+
+    if (!lastResetDate || lastResetDate < lastResetThreshold) {
+      // 1. อัปเดต profiles ให้ทุกคนที่ leave_status = true กลับเป็น false
+      const { error: resetErr } = await client
+        .from('profiles')
+        .update({ leave_status: false })
+        .eq('leave_status', true)
+
+      if (!resetErr) {
+        // 2. เคลียร์รายการคำขอลาหยุด (leave_requests) ที่ค้างอยู่
+        await client
+          .from('leave_requests')
+          .update({ status: 'expired' })
+          .eq('status', 'pending')
+
+        // บันทึกเวลาที่ทำการรีเซ็ตล่าสุด
+        localStorage.setItem('last_leave_reset_timestamp', now.toISOString())
+
+        if (store.fetchAllData) await store.fetchAllData()
+      }
+    }
+  } catch (e) {
+    console.error('Error checking and resetting daily leave status:', e)
   }
 }
 
@@ -1022,6 +1108,9 @@ onMounted(async () => {
     }
   }
 
+  // เรียกใช้ระบบรีเซ็ตสถานะลาหยุดหลัง 03:00 น.
+  await checkAndResetDailyLeave()
+
   if (store.fetchAllData) {
     await store.fetchAllData()
   }
@@ -1075,6 +1164,63 @@ const tabs = computed(() => [
   { id: 'inventory', label: 'คลังของแก๊ง' },
   { id: 'tickets', label: 'คำร้องสมาชิก' }
 ])
+
+// ฟังก์ชันแก้ไขข้อมูลโปรไฟล์ (Character Name / Username / Phone Number)
+const openEditProfileModal = () => {
+  profileForm.value = {
+    username: currentUserProfile.value?.username || '',
+    character_name: currentUserProfile.value?.character_name || '',
+    phone_number: currentUserProfile.value?.phone_number || ''
+  }
+  showEditProfileModal.value = true
+}
+
+const handleUpdateProfile = async () => {
+  if (!profileForm.value.username.trim() || !profileForm.value.character_name.trim()) {
+    return alert('กรุณากรอก Username และ ชื่อในเมือง ให้ครบถ้วน')
+  }
+
+  const userId = currentUserProfile.value?.id
+  if (!userId) return alert('ไม่พบข้อมูลผู้ใช้')
+
+  isUpdatingProfile.value = true
+
+  try {
+    const { error } = await client
+      .from('profiles')
+      .update({
+        username: profileForm.value.username.trim(),
+        character_name: profileForm.value.character_name.trim(),
+        phone_number: profileForm.value.phone_number.trim(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+
+    if (error) throw error
+
+    // อัปเดตข้อมูลเซสชันใน LocalStorage
+    if (process.client) {
+      const updatedUser = {
+        ...loggedUser.value,
+        username: profileForm.value.username.trim(),
+        character_name: profileForm.value.character_name.trim(),
+        phone_number: profileForm.value.phone_number.trim()
+      }
+      localStorage.setItem('gang_user_session', JSON.stringify(updatedUser))
+      loggedUser.value = updatedUser
+    }
+
+    if (store.fetchAllData) await store.fetchAllData()
+
+    alert('อัปเดตข้อมูลโปรไฟล์เรียบร้อยแล้ว!')
+    showEditProfileModal.value = false
+  } catch (e) {
+    console.error('Update profile error:', e)
+    alert('เกิดข้อผิดพลาดในการอัปเดตข้อมูลโปรไฟล์')
+  } finally {
+    isUpdatingProfile.value = false
+  }
+}
 
 const handleDepositFileSelect = (e) => {
   depositFile.value = e.target.files[0]
@@ -1231,7 +1377,7 @@ const handleCheckin = async (mode) => {
   const hours = now.getHours()
   const minutes = now.getMinutes()
   
-  if (hours > 22 || (hours === 23 && minutes >= 15)) {
+  if (hours > 22 || (hours === 22 && minutes > 15)) {
     return alert('ขณะนี้เกินเวลาเดดไลน์ 22:15 น. แล้ว ไม่สามารถส่งหลักฐานแอร์ดรอปได้')
   }
 

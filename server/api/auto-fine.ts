@@ -61,7 +61,7 @@ export default defineEventHandler(async (event) => {
         await supabase.from('fine_logs').insert({
           user_id: member.id,
           amount: penalty,
-          reason: 'ไม่ได้ลงแอร์ดรอปตามเวลาที่กำหนด (เดดไลน์ 22:15 น.)',
+          reason: 'ไม่ได้ลงแอร์ดรอปตามเวลาที่กำหนด (เดดไลน์ 21:00 น.)',
           type: 'fine'
         })
 
