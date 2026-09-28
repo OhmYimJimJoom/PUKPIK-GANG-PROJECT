@@ -819,11 +819,11 @@ const playlist = ref([
   },
   {
     title: 'ไม่ได้อยากจะเลวหรอก',
-    url: 'https://cdn.discordapp.com/attachments/1531701261689294999/1553655873870503976/Z9_PAWA_COVER_REMIX.mp3?ex=6aba0a49&is=6ab8b8c9&hm=cadfdba095f12bfccb20e94ca80d5d109e8e6442bf791f76eb5136c1188b887b&'
+    url: 'https://discordapp.com/channels/@me/1531701261689294999/1553655874210365460/https://cdn.discordapp.com/attachments/1531701261689294999/1553655874210365460/Y2Mate.is_-_ไม่ได้อยากจะเลวหรอก__Official_Audio_.mp3?ex=6abb5c7e&is=6aba0a4e&hm=1f8d8b9c1f3d7b5f1a2e4c3b5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f&'
   },
   {
     title: 'ไม่รักดีกว่า',
-    url: 'https://cdn.discordapp.com/attachments/1531701261689294999/1553656914141905026/Z9_Official_Music_Video.mp3?ex=6aba0b41&is=6ab8b9c1&hm=c3ff0441afb35b7528eea3e726f720c5541c6f88978fd56bdb5da4008a48892f&'
+    url: 'https://discordapp.com/channels/@me/1531701261689294999/1553656914662133770/https://cdn.discordapp.com/attachments/1531701261689294999/1553656914662133770/Y2Mate.is_-_ไม่รักดีกว่า__Official_Audio_.mp3?ex=6abb5c7e&is=6aba0a4e&hm=1f8d8b9c1f3d7b5f1a2e4c3b5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f&'
   },
 ])
 
