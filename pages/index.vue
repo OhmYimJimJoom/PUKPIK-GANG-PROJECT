@@ -14,7 +14,7 @@
     <div class="fixed bottom-5 right-5 z-50 bg-slate-900/95 backdrop-blur-md border border-slate-700/80 p-3.5 rounded-2xl shadow-2xl flex flex-col gap-2.5 transition-all hover:border-red-500/50 group w-72 sm:w-80">
       <audio ref="audioRef" :src="currentTrack.url" @ended="nextTrack" :loop="false"></audio>
       
-      <!-- Top Track Info & Select Box -->
+      <!-- Top Track Info & Select Box & Admin Actions -->
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2 overflow-hidden flex-1">
           <span v-if="isPlaying" class="w-2 h-2 rounded-full bg-green-400 animate-ping shrink-0"></span>
@@ -24,12 +24,31 @@
             @change="changeTrack"
             class="bg-slate-950 text-xs text-slate-200 border border-slate-800 rounded-lg px-2 py-1 focus:outline-none focus:border-red-500 truncate w-full cursor-pointer"
           >
-            <option v-for="(track, index) in playlist" :key="index" :value="index">
+            <option v-for="(track, index) in playlist" :key="track.id || index" :value="index">
               {{ index + 1 }}. {{ track.title }}
             </option>
           </select>
         </div>
-        <span class="text-[10px] text-slate-400 font-medium shrink-0">{{ Math.round(volume * 100) }}%</span>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <!-- ปุ่มเพิ่ม/ลบเพลง สำหรับยศบริหาร -->
+          <button 
+            v-if="isManagement" 
+            @click="showAddMusicModal = true" 
+            class="bg-red-600/80 hover:bg-red-600 text-white text-[10px] px-2 py-1 rounded transition cursor-pointer font-bold"
+            title="เพิ่มเพลงเข้าเพลย์ลิสต์"
+          >
+            ➕ เพิ่ม
+          </button>
+          <button 
+            v-if="isManagement && currentTrack?.id" 
+            @click="handleDeleteMusic(currentTrack.id)" 
+            class="bg-slate-800 hover:bg-red-600/30 text-red-400 text-[10px] px-1.5 py-1 rounded transition cursor-pointer border border-slate-700"
+            title="ลบเพลงนี้"
+          >
+            🗑️
+          </button>
+          <span class="text-[10px] text-slate-400 font-medium">{{ Math.round(volume * 100) }}%</span>
+        </div>
       </div>
 
       <!-- Controls & Volume -->
@@ -793,6 +812,37 @@
       </div>
     </div>
 
+    <!-- Modal 6: ป๊อปอัพ เพิ่มเพลงเข้าเพลย์ลิสต์ อัปโหลดไฟล์ MP3 (สำหรับหัวแก๊ง / ยศบริหาร) -->
+    <div v-if="showAddMusicModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+      <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-xl p-6 space-y-4 shadow-2xl">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">🎵 อัปโหลดเพลงเข้าเพลย์ลิสต์</h3>
+        <p class="text-xs text-slate-400">ใส่ชื่อเพลง และเลือกไฟล์เพลง (.mp3, .wav, .m4a) จากในเครื่องของคุณ</p>
+        
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">ชื่อเพลง</label>
+            <input v-model="musicForm.title" type="text" placeholder="ระบุชื่อเพลง..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="block text-xs text-slate-300 mb-1">เลือกไฟล์เพลงจากในเครื่อง (.mp3, .wav, .m4a, .ogg)</label>
+            <input 
+              type="file" 
+              accept="audio/*" 
+              @change="handleMusicFileSelect" 
+              class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-300 file:bg-slate-800 file:text-slate-200 file:border-0 file:rounded file:px-2 file:py-1 cursor-pointer" 
+            />
+          </div>
+        </div>
+
+        <div class="flex gap-2 justify-end pt-2">
+          <button @click="showAddMusicModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 text-xs rounded-lg cursor-pointer">ยกเลิก</button>
+          <button @click="handleAddMusicSubmit" :disabled="isSavingMusic" class="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:bg-slate-700 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20">
+            {{ isSavingMusic ? 'กำลังอัปโหลด...' : 'อัปโหลดเพลง' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -811,23 +861,122 @@ const audioRef = ref(null)
 const isPlaying = ref(false)
 const volume = ref(0.3)
 const currentTrackIndex = ref(0)
+const playlist = ref([])
 
-const playlist = ref([
-  {
-    title: 'ลื้อ ลื้อ',
-    url: 'https://cdn.discordapp.com/attachments/1531701261689294999/1553646892108480542/Y2Mate.is_-_-_Kakagoesbackhome__Official_Audio_.mp3?ex=6aba01ec&is=6ab8b06c&hm=b52eb2bac01f8e66ea765f177bda1d31d0654393c829aa98eee14b8ccbce5c77&'
-  },
-  {
-    title: 'ไม่ได้อยากจะเลวหรอก',
-    url: 'https://discordapp.com/channels/@me/1531701261689294999/1553655874210365460/https://cdn.discordapp.com/attachments/1531701261689294999/1553655874210365460/Y2Mate.is_-_ไม่ได้อยากจะเลวหรอก__Official_Audio_.mp3?ex=6abb5c7e&is=6aba0a4e&hm=1f8d8b9c1f3d7b5f1a2e4c3b5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f&'
-  },
-  {
-    title: 'ไม่รักดีกว่า',
-    url: 'https://discordapp.com/channels/@me/1531701261689294999/1553656914662133770/https://cdn.discordapp.com/attachments/1531701261689294999/1553656914662133770/Y2Mate.is_-_ไม่รักดีกว่า__Official_Audio_.mp3?ex=6abb5c7e&is=6aba0a4e&hm=1f8d8b9c1f3d7b5f1a2e4c3b5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f&'
-  },
-])
+// Music Modal State
+const showAddMusicModal = ref(false)
+const isSavingMusic = ref(false)
+const musicFile = ref(null)
+const musicForm = ref({ title: '' })
 
-const currentTrack = computed(() => playlist.value[currentTrackIndex.value] || playlist.value[0])
+// ฟังก์ชันเมื่อเลือกไฟล์เพลงจากเครื่อง
+const handleMusicFileSelect = (e) => {
+  const file = e.target.files[0]
+  if (file) {
+    musicFile.value = file
+    // Auto fill ชื่อเพลงจากชื่อไฟล์หากยังไม่ได้พิมพ์ชื่อ
+    if (!musicForm.value.title.trim()) {
+      musicForm.value.title = file.name.replace(/\.[^/.]+$/, "")
+    }
+  }
+}
+
+// ดึงรายการเพลงจาก Supabase Table `playlist`
+const fetchPlaylist = async () => {
+  try {
+    const { data, error } = await client
+      .from('playlist')
+      .select('*')
+      .order('created_at', { ascending: true })
+
+    if (!error && data && data.length > 0) {
+      playlist.value = data
+    } else {
+      playlist.value = []
+    }
+  } catch (e) {
+    console.error('Error fetching playlist:', e)
+  }
+}
+
+// ฟังก์ชันอัปโหลดไฟล์เพลง MP3 เข้า Supabase Storage และบันทึกลง Table
+const handleAddMusicSubmit = async () => {
+  if (!musicForm.value.title.trim()) {
+    return alert('กรุณากรอกชื่อเพลง')
+  }
+  if (!musicFile.value) {
+    return alert('กรุณาเลือกไฟล์เพลงจากในเครื่องก่อนครับ')
+  }
+
+  isSavingMusic.value = true
+  try {
+    const fileExt = musicFile.value.name.split('.').pop()
+    const fileName = `music_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`
+
+    // 1. อัปโหลดไฟล์ MP3 ขึ้น Supabase Storage bucket ชื่อ 'music'
+    const { data: uploadData, error: uploadErr } = await client
+      .storage
+      .from('music')
+      .upload(fileName, musicFile.value, {
+        cacheControl: '3600',
+        upsert: false
+      })
+
+    if (uploadErr) {
+      // แจ้งเตือนหากยังไม่ได้สร้าง Bucket
+      if (uploadErr.message?.includes('not found') || uploadErr.error === 'Bucket not found') {
+        throw new Error('ไม่พบ Storage Bucket ชื่อ "music" กรุณาสร้าง Bucket "music" ใน Supabase Dashboard ให้เป็น Public')
+      }
+      throw uploadErr
+    }
+
+    // 2. ดึง Public URL ของไฟล์ที่อัปโหลด
+    const { data: urlData } = client
+      .storage
+      .from('music')
+      .getPublicUrl(fileName)
+
+    const publicUrl = urlData.publicUrl
+
+    // 3. บันทึกข้อมูลเพลงลง Table `playlist`
+    const { error: insertErr } = await client.from('playlist').insert({
+      title: musicForm.value.title.trim(),
+      url: publicUrl
+    })
+
+    if (insertErr) throw insertErr
+
+    alert('อัปโหลดเพลงใหม่เข้าเพลย์ลิสต์เรียบร้อยแล้ว!')
+    showAddMusicModal.value = false
+    musicForm.value = { title: '' }
+    musicFile.value = null
+    await fetchPlaylist()
+  } catch (e) {
+    console.error('Add music error:', e)
+    alert(e.message || 'เกิดข้อผิดพลาดในการอัปโหลดเพลง')
+  } finally {
+    isSavingMusic.value = false
+  }
+}
+
+// ฟังก์ชันลบเพลง
+const handleDeleteMusic = async (trackId) => {
+  if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบเพลงนี้ออกจากเพลย์ลิสต์?')) {
+    try {
+      const { error } = await client.from('playlist').delete().eq('id', trackId)
+      if (error) throw error
+
+      alert('ลบเพลงเรียบร้อยแล้ว')
+      currentTrackIndex.value = 0
+      await fetchPlaylist()
+    } catch (e) {
+      console.error('Delete music error:', e)
+      alert('เกิดข้อผิดพลาดในการลบเพลง')
+    }
+  }
+}
+
+const currentTrack = computed(() => playlist.value[currentTrackIndex.value] || playlist.value[0] || { title: 'ไม่มีเพลง', url: '' })
 
 const toggleMusic = () => {
   if (!audioRef.value) return
@@ -840,7 +989,7 @@ const toggleMusic = () => {
 }
 
 const playCurrentTrack = () => {
-  if (!audioRef.value) return
+  if (!audioRef.value || !currentTrack.value.url) return
   audioRef.value.volume = volume.value
   audioRef.value.play().then(() => {
     isPlaying.value = true
@@ -856,11 +1005,13 @@ const changeTrack = () => {
 }
 
 const nextTrack = () => {
+  if (playlist.value.length === 0) return
   currentTrackIndex.value = (currentTrackIndex.value + 1) % playlist.value.length
   changeTrack()
 }
 
 const prevTrack = () => {
+  if (playlist.value.length === 0) return
   currentTrackIndex.value = (currentTrackIndex.value - 1 + playlist.value.length) % playlist.value.length
   changeTrack()
 }
@@ -1010,35 +1161,29 @@ const fetchAirdropCheckins = async () => {
 const checkAndResetDailyLeave = async () => {
   try {
     const now = new Date()
-    // หาเวลา 03:00 น. ของวันปัจจุบัน
     const resetTimeToday = new Date()
     resetTimeToday.setHours(3, 0, 0, 0)
 
-    // คำนวณขอบเขตช่วงเวลาของการรีเซ็ตครั้งล่าสุด (ถ้าเวลาปัจจุบัน < 03:00 น. ขอบเขตจะเป็น 03:00 น. ของเมื่อวาน)
     let lastResetThreshold = resetTimeToday
     if (now < resetTimeToday) {
       lastResetThreshold = new Date(resetTimeToday.getTime() - 24 * 60 * 60 * 1000)
     }
 
-    // ตรวจสอบจาก LocalStorage ว่าเคยรีเซ็ตของรอบนี้ไปแล้วหรือยัง
     const lastResetString = localStorage.getItem('last_leave_reset_timestamp')
     const lastResetDate = lastResetString ? new Date(lastResetString) : null
 
     if (!lastResetDate || lastResetDate < lastResetThreshold) {
-      // 1. อัปเดต profiles ให้ทุกคนที่ leave_status = true กลับเป็น false
       const { error: resetErr } = await client
         .from('profiles')
         .update({ leave_status: false })
         .eq('leave_status', true)
 
       if (!resetErr) {
-        // 2. เคลียร์รายการคำขอลาหยุด (leave_requests) ที่ค้างอยู่
         await client
           .from('leave_requests')
           .update({ status: 'expired' })
           .eq('status', 'pending')
 
-        // บันทึกเวลาที่ทำการรีเซ็ตล่าสุด
         localStorage.setItem('last_leave_reset_timestamp', now.toISOString())
 
         if (store.fetchAllData) await store.fetchAllData()
@@ -1108,7 +1253,6 @@ onMounted(async () => {
     }
   }
 
-  // เรียกใช้ระบบรีเซ็ตสถานะลาหยุดหลัง 03:00 น.
   await checkAndResetDailyLeave()
 
   if (store.fetchAllData) {
@@ -1117,6 +1261,7 @@ onMounted(async () => {
   if (store.fetchPendingDeposits) await store.fetchPendingDeposits()
   if (store.fetchRulesList) await store.fetchRulesList()
 
+  await fetchPlaylist()
   await fetchAirdropCheckins()
   await fetchMyFineLogs()
 
@@ -1165,7 +1310,6 @@ const tabs = computed(() => [
   { id: 'tickets', label: 'คำร้องสมาชิก' }
 ])
 
-// ฟังก์ชันแก้ไขข้อมูลโปรไฟล์ (Character Name / Username / Phone Number)
 const openEditProfileModal = () => {
   profileForm.value = {
     username: currentUserProfile.value?.username || '',
@@ -1198,7 +1342,6 @@ const handleUpdateProfile = async () => {
 
     if (error) throw error
 
-    // อัปเดตข้อมูลเซสชันใน LocalStorage
     if (process.client) {
       const updatedUser = {
         ...loggedUser.value,
@@ -1367,12 +1510,10 @@ const handleFileSelect = (event, mode) => {
   if (mode === 'airdrop') airdropFile.value = file
 }
 
-// อัปโหลดหลักฐานแอร์ดรอปไปยังตาราง airdrop_checkins
 const handleCheckin = async (mode) => {
   const userId = currentUserProfile.value?.id
   if (!userId) return alert('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง')
 
-  // เช็คเวลาปัจจุบันก่อน หากเกิน 22:15 น. ไม่ให้ส่ง
   const now = new Date()
   const hours = now.getHours()
   const minutes = now.getMinutes()
@@ -1410,7 +1551,6 @@ const handleCheckin = async (mode) => {
   }
 }
 
-// ฟังก์ชันสำหรับยศบริหาร/หัวแก๊ง เพื่อกดอนุมัติ/ปฏิเสธ แอร์ดรอป
 const handleApproveAirdrop = async (checkinId, userId, isApproved) => {
   try {
     const status = isApproved ? 'approved' : 'rejected'

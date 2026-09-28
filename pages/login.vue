@@ -6,22 +6,27 @@
 
     <!-- 🎵 Floating Audio Player Widget -->
     <div class="fixed bottom-5 right-5 z-50 bg-slate-900/95 backdrop-blur-md border border-slate-700/80 p-3.5 rounded-2xl shadow-2xl flex flex-col gap-2.5 transition-all hover:border-red-500/50 group w-72 sm:w-80">
-      <audio ref="audioRef" :src="currentTrack.url" @ended="nextTrack" :loop="false"></audio>
+      <audio ref="audioRef" :src="currentTrack?.url" @ended="nextTrack" :loop="false"></audio>
       
       <!-- Top Track Info & Select Box -->
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2 overflow-hidden flex-1">
           <span v-if="isPlaying" class="w-2 h-2 rounded-full bg-green-400 animate-ping shrink-0"></span>
           <span v-else class="w-2 h-2 rounded-full bg-slate-500 shrink-0"></span>
+          
           <select 
+            v-if="playlist.length > 0"
             v-model="currentTrackIndex" 
             @change="changeTrack"
             class="bg-slate-950 text-xs text-slate-200 border border-slate-800 rounded-lg px-2 py-1 focus:outline-none focus:border-red-500 truncate w-full cursor-pointer"
           >
-            <option v-for="(track, index) in playlist" :key="index" :value="index">
+            <option v-for="(track, index) in playlist" :key="track.id || index" :value="index">
               {{ index + 1 }}. {{ track.title }}
             </option>
           </select>
+          <span v-else class="text-xs text-slate-500 italic truncate">
+            {{ isFetchingPlaylist ? 'กำลังโหลดเพลง...' : 'ไม่มีเพลงในระบบ' }}
+          </span>
         </div>
         <span class="text-[10px] text-slate-400 font-medium shrink-0">{{ Math.round(volume * 100) }}%</span>
       </div>
@@ -32,7 +37,8 @@
         <div class="flex items-center gap-1.5 shrink-0">
           <button 
             @click="prevTrack" 
-            class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center transition text-xs cursor-pointer"
+            :disabled="playlist.length === 0"
+            class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 flex items-center justify-center transition text-xs cursor-pointer"
             title="เพลงก่อนหน้า"
           >
             ⏮️
@@ -40,7 +46,8 @@
 
           <button 
             @click="toggleMusic" 
-            class="w-9 h-9 rounded-xl bg-red-600 hover:bg-red-500 text-white flex items-center justify-center transition shadow-lg shadow-red-600/30 cursor-pointer"
+            :disabled="playlist.length === 0"
+            class="w-9 h-9 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white flex items-center justify-center transition shadow-lg shadow-red-600/30 cursor-pointer"
             :title="isPlaying ? 'หยุดเพลง' : 'เล่นเพลง'"
           >
             <span v-if="isPlaying" class="text-sm">⏸️</span>
@@ -49,7 +56,8 @@
 
           <button 
             @click="nextTrack" 
-            class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 flex items-center justify-center transition text-xs cursor-pointer"
+            :disabled="playlist.length === 0"
+            class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 flex items-center justify-center transition text-xs cursor-pointer"
             title="เพลงถัดไป"
           >
             ⏭️
@@ -148,27 +156,39 @@ const audioRef = ref(null)
 const isPlaying = ref(false)
 const volume = ref(0.3)
 const currentTrackIndex = ref(0)
+const playlist = ref([])
+const isFetchingPlaylist = ref(false)
 
-// 🎵 รายชื่อเพลงทั้งหมด
-const playlist = ref([
-  {
-    title: 'ลื้อ ลื้อ',
-    url: 'https://cdn.discordapp.com/attachments/1531701261689294999/1553646892108480542/Y2Mate.is_-_-_Kakagoesbackhome__Official_Audio_.mp3?ex=6aba01ec&is=6ab8b06c&hm=b52eb2bac01f8e66ea765f177bda1d31d0654393c829aa98eee14b8ccbce5c77&'
-  },
-  {
-    title: 'ไม่ได้อยากจะเลวหรอก',
-    url: 'https://cdn.discordapp.com/attachments/1531701261689294999/1553655873870503976/Z9_PAWA_COVER_REMIX.mp3?ex=6aba0a49&is=6ab8b8c9&hm=cadfdba095f12bfccb20e94ca80d5d109e8e6442bf791f76eb5136c1188b887b&'
-  },
-  {
-    title: 'ไม่รักดีกว่า',
-    url: 'https://cdn.discordapp.com/attachments/1531701261689294999/1553656914141905026/Z9_Official_Music_Video.mp3?ex=6aba0b41&is=6ab8b9c1&hm=c3ff0441afb35b7528eea3e726f720c5541c6f88978fd56bdb5da4008a48892f&'
-  },
-])
+const currentTrack = computed(() => {
+  if (playlist.value.length === 0) return null
+  return playlist.value[currentTrackIndex.value] || playlist.value[0]
+})
 
-const currentTrack = computed(() => playlist.value[currentTrackIndex.value] || playlist.value[0])
+// 🎵 โหลดรายการเพลงจาก Supabase Database
+const fetchPlaylist = async () => {
+  isFetchingPlaylist.value = true
+  try {
+    const { data, error } = await client
+      .from('playlist')
+      .select('*')
+      .order('created_at', { ascending: true })
+
+    if (error) throw error
+
+    if (data && data.length > 0) {
+      playlist.value = data
+    } else {
+      playlist.value = []
+    }
+  } catch (err) {
+    console.error('Fetch playlist error on login page:', err)
+  } finally {
+    isFetchingPlaylist.value = false
+  }
+}
 
 const toggleMusic = () => {
-  if (!audioRef.value) return
+  if (!audioRef.value || playlist.value.length === 0) return
   if (isPlaying.value) {
     audioRef.value.pause()
     isPlaying.value = false
@@ -178,7 +198,7 @@ const toggleMusic = () => {
 }
 
 const playCurrentTrack = () => {
-  if (!audioRef.value) return
+  if (!audioRef.value || playlist.value.length === 0) return
   audioRef.value.volume = volume.value
   audioRef.value.play().then(() => {
     isPlaying.value = true
@@ -194,11 +214,13 @@ const changeTrack = () => {
 }
 
 const nextTrack = () => {
+  if (playlist.value.length === 0) return
   currentTrackIndex.value = (currentTrackIndex.value + 1) % playlist.value.length
   changeTrack()
 }
 
 const prevTrack = () => {
+  if (playlist.value.length === 0) return
   currentTrackIndex.value = (currentTrackIndex.value - 1 + playlist.value.length) % playlist.value.length
   changeTrack()
 }
@@ -282,6 +304,7 @@ const initSnowfall = () => {
 
 onMounted(() => {
   initSnowfall()
+  fetchPlaylist()
   if (audioRef.value) {
     audioRef.value.volume = volume.value
   }
