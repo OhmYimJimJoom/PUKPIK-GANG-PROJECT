@@ -1,94 +1,86 @@
 import { createClient } from '@supabase/supabase-js'
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig(event)
+  const config = useRuntimeConfig()
   
-  // ดึงค่า Supabase Credentials ผ่าน RuntimeConfig ของ Nuxt
-  const supabaseUrl = (config.public.supabaseUrl || config.public.supabase?.url) as string
-  const supabaseServiceKey = (config.supabaseServiceKey || config.supabase?.serviceKey) as string
+  // ใช้ Service Role หรือ Supabase URL/Key ตามที่ตั้งค่าไว้
+  const supabaseUrl = config.public.supabaseUrl
+  const supabaseKey = config.supabaseServiceRoleKey || config.public.supabaseKey
 
-  // Fallback ดึงค่า Env ป้องกัน Error
-  const envUrl = supabaseUrl || (globalThis as any).process?.env?.SUPABASE_URL || (globalThis as any).process?.env?.NUXT_PUBLIC_SUPABASE_URL
-  const envKey = supabaseServiceKey || (globalThis as any).process?.env?.SUPABASE_SERVICE_KEY || (globalThis as any).process?.env?.NUXT_SUPABASE_SERVICE_KEY
-
-  if (!envUrl || !envKey) {
-    return {
-      success: false,
-      error: `Missing Supabase Credentials. (URL: ${!!envUrl}, Key: ${!!envKey})`
-    }
+  if (!supabaseUrl || !supabaseKey) {
+    return { status: 'error', message: 'Missing Supabase configuration' }
   }
 
-  const supabase = createClient(envUrl, envKey)
+  const supabase = createClient(supabaseUrl, supabaseKey)
 
   try {
-    const today = new Date().toISOString().split('T')[0]
-
-    // 1. ดึงสมาชิกทุกคนทุกตำแหน่ง (รวม role) ที่ไม่ได้ตั้งสถานะลาหยุด (leave_status != true)
-    const { data: members, error: memberErr } = await supabase
+    // 1. ดึงข้อมูลสมาชิกทั้งหมด
+    const { data: profiles, error: profilesErr } = await supabase
       .from('profiles')
-      .select('id, role, fine_balance, leave_status')
-      .or('leave_status.is.null,leave_status.eq.false')
+      .select('id, character_name, leave_status, fine_balance')
 
-    if (memberErr) throw memberErr
-    if (!members || members.length === 0) return { success: true, count: 0 }
+    if (profilesErr) throw profilesErr
 
-    // 2. ดึงรายการเช็คชื่อแอร์ดรอปของวันนี้ที่ได้รับการอนุมัติแล้ว ('approved')
-    const { data: approvedAirdrops } = await supabase
+    // 2. ดึงรายการเช็คชื่อแอร์ดรอปที่ได้รับการอนุมัติวันนี้
+    const { data: approvedCheckins, error: checkinErr } = await supabase
       .from('airdrop_checkins')
       .select('user_id')
       .eq('status', 'approved')
-      .gte('created_at', `${today}T00:00:00`)
 
-    const approvedUserIds = new Set(approvedAirdrops?.map(a => a.user_id) || [])
+    if (checkinErr) throw checkinErr
 
-    let finedCount = 0
+    const approvedUserIds = new Set(approvedCheckins?.map(c => c.user_id) || [])
 
-    // 3. วนลูปตรวจเช็คสมาชิกทุกตำแหน่ง (รวมหัวแก๊ง/รองแก๊ง) และทำการปรับเงินหากไม่มีการลงแอร์ดรอปที่อนุมัติ
-    for (const member of members) {
-      const hasApprovedAirdrop = approvedUserIds.has(member.id)
+    // 3. วนลูปตรวจสอบสมาชิกที่ไม่ลงแอร์ดรอปและไม่ได้ลาหยุด
+    const fineAmount = 100000
+    const fineLogsToInsert = []
+    const profileUpdates = []
 
-      if (!hasApprovedAirdrop) {
-        const penalty = 100000
-        const currentBalance = member.fine_balance ?? 0
-        
-        // อัปเดตยอด Fine Balance ของสมาชิก (+100,000)
-        await supabase
-          .from('profiles')
-          .update({ fine_balance: currentBalance + penalty })
-          .eq('id', member.id)
-
-        // เพิ่มประวัติใน fine_logs
-        await supabase.from('fine_logs').insert({
-          user_id: member.id,
-          amount: penalty,
-          reason: 'ไม่ได้ลงแอร์ดรอปตามเวลาที่กำหนด (เดดไลน์ 21:00 น.)',
+    for (const profile of profiles || []) {
+      // ถ้าไม่ได้ลงแอร์ดรอป และไม่ได้ลาหยุด
+      if (!approvedUserIds.has(profile.id) && !profile.leave_status) {
+        // เพิ่มประวัติการโดนปรับ 100,000 บาท
+        fineLogsToInsert.push({
+          user_id: profile.id,
+          amount: fineAmount,
+          reason: 'ขาดการลงแอร์ดรอปประจำวัน (ปรับอัตโนมัติ 03:00 น.)',
           type: 'fine'
         })
 
-        finedCount++
+        // เพิ่มยอดหนี้สะสม
+        const newBalance = (profile.fine_balance || 0) + fineAmount
+        profileUpdates.push(
+          supabase
+            .from('profiles')
+            .update({ fine_balance: newBalance })
+            .eq('id', profile.id)
+        )
       }
     }
 
-    // 4. ปรับรายการที่ยังค้างรออนุมัติ ('pending') ของวันนี้ให้เป็นปฏิเสธ ('rejected') เนื่องจากเลยเวลาเดดไลน์แล้ว
-    await supabase
-      .from('airdrop_checkins')
-      .update({ status: 'rejected' })
-      .eq('status', 'pending')
-      .gte('created_at', `${today}T00:00:00`)
+    // ทำการบันทึกค่าปรับย้อนหลัง
+    if (fineLogsToInsert.length > 0) {
+      await supabase.from('fine_logs').insert(fineLogsToInsert)
+      await Promise.all(profileUpdates)
+    }
 
-    // 5. ลบหลักฐานรูปภาพการเช็คชื่อแอร์ดรอปของวันก่อนหน้าเพื่อประหยัดพื้นที่ Storage
-    await supabase
-      .from('airdrop_checkins')
-      .delete()
-      .lt('created_at', `${today}T00:00:00`)
+    // 4. 🔄 รีเซ็ตสถานะทุกอย่างต้อนรับวันใหม่ (03:00 น.)
+    // 4.1 ล้างหลักฐานการเช็คชื่อแอร์ดรอปทั้งหมด
+    await supabase.from('airdrop_checkins').delete().neq('id', 0)
 
-    return { 
-      success: true, 
-      fined_members: finedCount,
-      message: 'คำนวณค่าปรับแอร์ดรอปสำหรับสมาชิกทุกคน (เดดไลน์ 22:15 น.) เรียบร้อยแล้ว'
+    // 4.2 รีเซ็ตสถานะการลาหยุดของทุกคน
+    await supabase.from('profiles').update({ leave_status: false }).eq('leave_status', true)
+
+    // 4.3 อัปเดตคำขอลาหยุดรออนุมัติให้หมดอายุ
+    await supabase.from('leave_requests').update({ status: 'expired' }).eq('status', 'pending')
+
+    return {
+      status: 'success',
+      message: 'ประมวลผลปรับเงินขาดแอร์ดรอป และรีเซ็ตระบบประจำวันสำเร็จ',
+      fined_count: fineLogsToInsert.length
     }
   } catch (error: any) {
-    console.error('Auto fine error:', error)
-    return { success: false, error: error?.message || 'Internal Server Error' }
+    console.error('Auto Fine & Reset Cron Error:', error)
+    return { status: 'error', message: error.message }
   }
 })
