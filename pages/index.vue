@@ -3,15 +3,15 @@
   <div class="min-h-screen bg-slate-950 text-slate-100 font-sans pb-12 relative overflow-hidden transition-colors duration-500">
     
     <!-- Background Image Placeholders พร้อม Effect ลอยนุ่มๆ -->
-    <div class="fixed top-[-5%] left-[-5%] w-[500px] h-[500px] bg-cover bg-center rounded-3xl pointer-events-none rotate-12 backdrop-blur-xs opacity-25 border border-slate-700/50 animate-pulse" style="background-image: url('/img/image.png'); animation-duration: 8s;"></div>
-    <div class="fixed top-[20%] right-[-5%] w-[600px] h-[600px] bg-cover bg-center rounded-3xl pointer-events-none -rotate-6 backdrop-blur-xs opacity-25 border border-slate-700/50 animate-pulse" style="background-image: url('/img/541F17CF-F73E-4E4C-A209-D750B423A3F1.png'); animation-duration: 10s;"></div>
-    <div class="fixed bottom-[-10%] left-[15%] w-[500px] h-[500px] bg-cover bg-center rounded-3xl pointer-events-none rotate-4 backdrop-blur-xs opacity-25 border border-slate-700/50 animate-pulse" style="background-image: url('/img/image1.png'); animation-duration: 12s;"></div>
+    <div class="fixed top-[-5%] left-[-5%] w-[500px] h-[500px] bg-cover bg-center rounded-3xl pointer-events-none rotate-12 backdrop-blur-xs opacity-25 border border-slate-700/50 animate-pulse transition-transform duration-1000 hover:scale-105" style="background-image: url('/img/image.png'); animation-duration: 8s;"></div>
+    <div class="fixed top-[20%] right-[-5%] w-[600px] h-[600px] bg-cover bg-center rounded-3xl pointer-events-none -rotate-6 backdrop-blur-xs opacity-25 border border-slate-700/50 animate-pulse transition-transform duration-1000 hover:scale-105" style="background-image: url('/img/541F17CF-F73E-4E4C-A209-D750B423A3F1.png'); animation-duration: 10s;"></div>
+    <div class="fixed bottom-[-10%] left-[15%] w-[500px] h-[500px] bg-cover bg-center rounded-3xl pointer-events-none rotate-4 backdrop-blur-xs opacity-25 border border-slate-700/50 animate-pulse transition-transform duration-1000 hover:scale-105" style="background-image: url('/img/image1.png'); animation-duration: 12s;"></div>
 
     <!-- ❄️ Snowfall Canvas Effect -->
     <canvas ref="snowCanvas" class="fixed inset-0 pointer-events-none z-20"></canvas>
 
    <!-- 🎵 Floating Audio Player Widget -->
-    <div class="fixed bottom-5 right-5 z-50 bg-slate-900/90 backdrop-blur-md border border-slate-700/80 p-3.5 rounded-2xl shadow-2xl flex flex-col gap-2.5 transition-all duration-300 hover:border-red-500/50 hover:shadow-red-900/20 group w-72 sm:w-80 hover:-translate-y-1">
+    <div class="fixed bottom-5 right-5 z-50 bg-slate-900/90 backdrop-blur-md border border-slate-700/80 p-3.5 rounded-2xl shadow-2xl flex flex-col gap-2.5 transition-all duration-300 hover:border-red-500/50 hover:shadow-red-900/30 group w-72 sm:w-80 hover:-translate-y-1">
       <audio 
         ref="audioRef" 
         :src="currentTrack.url" 
@@ -27,7 +27,7 @@
           <select 
             v-model="currentTrackIndex" 
             @change="changeTrack"
-            class="bg-slate-950 text-xs text-slate-200 border border-slate-800 rounded-lg px-2 py-1 focus:outline-none focus:border-red-500 truncate w-full cursor-pointer transition"
+            class="bg-slate-950 text-xs text-slate-200 border border-slate-800 rounded-lg px-2 py-1 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 truncate w-full cursor-pointer transition-all duration-200"
           >
             <option v-for="(track, index) in playlist" :key="track.id || index" :value="index">
               {{ index + 1 }}. {{ track.title }}
@@ -38,7 +38,7 @@
           <button 
             v-if="isManagement" 
             @click="showAddMusicModal = true" 
-            class="bg-red-600/80 hover:bg-red-600 active:scale-95 text-white text-[10px] px-2 py-1 rounded transition cursor-pointer font-bold shadow-md"
+            class="bg-red-600/80 hover:bg-red-600 hover:scale-105 active:scale-95 text-white text-[10px] px-2 py-1 rounded transition-all duration-200 cursor-pointer font-bold shadow-md hover:shadow-red-600/30"
             title="เพิ่มเพลงเข้าเพลย์ลิสต์"
           >
             ➕ เพิ่ม
@@ -46,7 +46,7 @@
           <button 
             v-if="isManagement && currentTrack?.id" 
             @click="handleDeleteMusic(currentTrack.id)" 
-            class="bg-slate-800 hover:bg-red-600/30 text-red-400 active:scale-95 text-[10px] px-1.5 py-1 rounded transition cursor-pointer border border-slate-700"
+            class="bg-slate-800 hover:bg-red-600/30 text-red-400 hover:scale-105 active:scale-95 text-[10px] px-1.5 py-1 rounded transition-all duration-200 cursor-pointer border border-slate-700 hover:border-red-500/50"
             title="ลบเพลงนี้"
           >
             🗑️
@@ -59,7 +59,7 @@
         <div class="flex items-center gap-1.5 shrink-0">
           <button 
             @click="prevTrack" 
-            class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-90 text-slate-200 flex items-center justify-center transition text-xs cursor-pointer"
+            class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-90 text-slate-200 flex items-center justify-center transition-all duration-200 text-xs cursor-pointer"
             title="เพลงก่อนหน้า"
           >
             ⏮️
@@ -67,7 +67,7 @@
 
           <button 
             @click="toggleMusic" 
-            class="w-9 h-9 rounded-xl bg-red-600 hover:bg-red-500 active:scale-90 text-white flex items-center justify-center transition shadow-lg shadow-red-600/30 cursor-pointer hover:shadow-red-500/50"
+            class="w-9 h-9 rounded-xl bg-red-600 hover:bg-red-500 hover:scale-105 active:scale-90 text-white flex items-center justify-center transition-all duration-200 shadow-lg shadow-red-600/30 cursor-pointer hover:shadow-red-500/50"
             :title="isPlaying ? 'หยุดเพลง' : 'เล่นเพลง'"
           >
             <span v-if="isPlaying" class="text-sm">⏸️</span>
@@ -76,7 +76,7 @@
 
           <button 
             @click="nextTrack" 
-            class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-90 text-slate-200 flex items-center justify-center transition text-xs cursor-pointer"
+            class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-90 text-slate-200 flex items-center justify-center transition-all duration-200 text-xs cursor-pointer"
             title="เพลงถัดไป"
           >
             ⏭️
@@ -91,22 +91,22 @@
             step="0.01" 
             v-model.number="volume" 
             @input="updateVolume"
-            class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-500"
+            class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-500 hover:accent-red-400 transition-all duration-200"
           />
         </div>
       </div>
     </div>
 
     <!-- Header -->
-    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40 shadow-lg transition-all duration-300">
+    <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-40 shadow-lg shadow-black/20 transition-all duration-300">
       <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
         <div class="flex items-center space-x-3 group cursor-default">
           <div 
-            class="w-20 h-20 rounded-lg shadow-lg shadow-red-600/40 border border-red-500/50 bg-cover bg-center shrink-0 transition-transform duration-300 group-hover:scale-105" 
+            class="w-20 h-20 rounded-lg shadow-lg shadow-red-600/40 border border-red-500/50 bg-cover bg-center shrink-0 transition-transform duration-300 group-hover:scale-105 group-hover:rotate-1" 
             style="background-image: url('/img/541F17CF-F73E-4E4C-A209-D750B423A3F1.png');"
           ></div>
           <div>
-            <h1 class="text-xl font-bold tracking-wider text-white flex items-center gap-2 group-hover:text-red-400 transition-colors">
+            <h1 class="text-xl font-bold tracking-wider text-white flex items-center gap-2 group-hover:text-red-400 transition-colors duration-300">
               PUKPIK GANG SYSTEM
             </h1>
             <p class="text-xs text-slate-400">ระบบจัดการแก๊งแบบครบวงจร</p>
@@ -114,11 +114,11 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <div class="flex items-center gap-3 bg-slate-950/80 px-3 py-1.5 rounded-lg border border-slate-800 backdrop-blur hover:border-slate-700 transition">
+          <div class="flex items-center gap-3 bg-slate-950/80 px-3 py-1.5 rounded-lg border border-slate-800 backdrop-blur hover:border-slate-700 hover:bg-slate-900/90 transition-all duration-300 shadow-inner">
             <div class="text-right">
               <p class="text-xs font-bold text-white">{{ currentUserProfile?.character_name || 'ไม่พบข้อมูลผู้ใช้' }}</p>
               <div class="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1.5 justify-end">
-                <span :class="getRoleBadge(currentUserRole)" class="px-1.5 py-0.5 rounded font-semibold text-[10px]">
+                <span :class="getRoleBadge(currentUserRole)" class="px-1.5 py-0.5 rounded font-semibold text-[10px] transition-all">
                   {{ getRoleName(currentUserRole) }}
                 </span>
                 <span v-if="currentUserProfile?.leave_status" class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded font-semibold text-[10px] animate-pulse">
@@ -130,7 +130,7 @@
 
           <button 
             @click="handleLogout" 
-            class="bg-slate-800 hover:bg-red-600/20 active:scale-95 text-slate-300 hover:text-red-400 border border-slate-700 hover:border-red-500/40 text-xs px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 cursor-pointer shadow-sm"
+            class="bg-slate-800 hover:bg-red-600/20 active:scale-95 hover:scale-105 text-slate-300 hover:text-red-400 border border-slate-700 hover:border-red-500/40 text-xs px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
             🚪 ออกจากระบบ
           </button>
@@ -140,13 +140,13 @@
 
     <main class="max-w-7xl mx-auto px-4 mt-8 space-y-8 relative z-30">
       <!-- Nav Tabs -->
-      <div class="flex border-b border-slate-800/80 gap-2 overflow-x-auto scrollbar-none">
+      <div class="flex border-b border-slate-800/80 gap-2 overflow-x-auto scrollbar-none pb-1">
         <button 
           v-for="tab in tabs" 
           :key="tab.id"
           @click="activeTab = tab.id"
           :class="[
-            'px-5 py-3 font-medium text-sm border-b-2 transition-all duration-300 whitespace-nowrap cursor-pointer rounded-t-lg relative',
+            'px-5 py-3 font-medium text-sm border-b-2 transition-all duration-300 hover:-translate-y-0.5 whitespace-nowrap cursor-pointer rounded-t-lg relative',
             activeTab === tab.id ? 'border-red-500 font-bold text-red-500 bg-red-500/10 shadow-[inset_0_-2px_10px_rgba(239,68,68,0.15)]' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
           ]"
         >
@@ -163,7 +163,7 @@
         <div v-if="activeTab === 'members'" key="members" class="space-y-6">
           
           <!-- แจ้งลาหยุดประจำวัน -->
-          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl hover:border-slate-700 transition-all duration-300">
+          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-xl hover:border-slate-700 transition-all duration-300 hover:shadow-2xl">
             <div>
               <h3 class="text-sm font-bold text-white flex items-center gap-2">
                 🌴 แจ้งลาหยุดประจำวัน
@@ -174,7 +174,7 @@
             <button 
               v-if="currentUserProfile?.leave_status"
               @click="handleCancelLeave"
-              class="px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 active:scale-95 bg-amber-600 hover:bg-amber-700 text-white border border-amber-500 cursor-pointer shadow-md shrink-0"
+              class="px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 bg-amber-600 hover:bg-amber-700 text-white border border-amber-500 cursor-pointer shadow-md shadow-amber-600/20 shrink-0"
             >
               ✅ กำลังลาหยุดพัก (กดเพื่อยกเลิกการลา)
             </button>
@@ -182,7 +182,7 @@
             <button 
               v-else
               @click="showLeaveModal = true"
-              class="px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 active:scale-95 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 cursor-pointer shadow-md shrink-0 hover:border-amber-500/50"
+              class="px-4 py-2 rounded-lg text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 cursor-pointer shadow-md shrink-0 hover:border-amber-500/50"
             >
               ✈️ ยื่นเรื่องขอลาหยุดวันนี้
             </button>
@@ -195,7 +195,7 @@
               🌴 รายการคำขอลาหยุดรออนุมัติ ({{ pendingLeaveRequests.length }})
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div v-for="req in pendingLeaveRequests" :key="req.id" class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3 hover:border-amber-500/40 transition-all duration-300">
+              <div v-for="req in pendingLeaveRequests" :key="req.id" class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3 hover:border-amber-500/50 hover:-translate-y-1 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10">
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="font-bold text-white">{{ req.profiles?.character_name || 'สมาชิก' }}</p>
@@ -204,15 +204,15 @@
                   <span class="text-[10px] text-slate-500">{{ new Date(req.created_at).toLocaleTimeString() }}</span>
                 </div>
                 <div class="flex gap-2 pt-2 border-t border-slate-800">
-                  <button @click="store.approveLeaveRequest(req.id, req.user_id, true)" class="flex-1 bg-green-600 hover:bg-green-700 active:scale-95 text-white text-xs py-1.5 rounded font-medium cursor-pointer transition shadow-md">อนุมัติลา</button>
-                  <button @click="store.approveLeaveRequest(req.id, req.user_id, false)" class="flex-1 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs py-1.5 rounded cursor-pointer transition">ปฏิเสธ</button>
+                  <button @click="store.approveLeaveRequest(req.id, req.user_id, true)" class="flex-1 bg-green-600 hover:bg-green-700 hover:scale-105 active:scale-95 text-white text-xs py-1.5 rounded font-medium cursor-pointer transition-all duration-200 shadow-md shadow-green-600/20">อนุมัติลา</button>
+                  <button @click="store.approveLeaveRequest(req.id, req.user_id, false)" class="flex-1 bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-slate-300 text-xs py-1.5 rounded cursor-pointer transition-all duration-200">ปฏิเสธ</button>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Form เช็คชื่อเข้าแอร์ดรอป (เวลา 20:30 - 21:30 น.) -->
-          <div class="max-w-2xl mx-auto bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl hover:border-amber-500/50 transition-all duration-300">
+          <div class="max-w-2xl mx-auto bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl hover:border-amber-500/50 hover:shadow-2xl transition-all duration-300">
             <h2 class="text-base font-bold text-amber-400 mb-1 flex items-center gap-2">
               <span class="w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping"></span>
               เช็คชื่อเข้าแอร์ดรอป (เปิดระบบ 20:30 - 21:30 น.)
@@ -231,13 +231,13 @@
                   accept="image/*" 
                   @change="e => handleFileSelect(e, 'airdrop')" 
                   required 
-                  class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-300 file:bg-slate-800 file:text-slate-200 file:border-0 file:rounded file:px-2 file:py-1 cursor-pointer focus:outline-none focus:border-amber-500/50 transition" 
+                  class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-300 file:bg-slate-800 file:text-slate-200 file:border-0 file:rounded file:px-2 file:py-1 cursor-pointer focus:outline-none focus:border-amber-500/50 transition-all duration-200" 
                 />
               </div>
               <button 
                 type="submit" 
                 :disabled="isUploadingAirdrop" 
-                class="w-full bg-amber-600 hover:bg-amber-700 active:scale-[0.99] disabled:bg-slate-700 text-white font-medium py-2.5 rounded-lg text-xs transition-all duration-200 cursor-pointer shadow-lg shadow-amber-600/20 font-bold flex items-center justify-center gap-2"
+                class="w-full bg-amber-600 hover:bg-amber-700 hover:scale-[1.01] active:scale-[0.99] disabled:bg-slate-700 text-white font-medium py-2.5 rounded-lg text-xs transition-all duration-200 cursor-pointer shadow-lg shadow-amber-600/20 font-bold flex items-center justify-center gap-2"
               >
                 <span v-if="isUploadingAirdrop" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                 <span>{{ isUploadingAirdrop ? 'กำลังประมวลผลข้อมูล...' : 'ส่งหลักฐานแอร์ดรอปให้หัวแก๊งอนุมัติ' }}</span>
@@ -252,7 +252,7 @@
               ⏳ รายการเช็คชื่อแอร์ดรอปรออนุมัติ ({{ pendingAirdropCheckins.length }})
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div v-for="item in pendingAirdropCheckins" :key="item.id" class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3 hover:border-amber-500/40 transition duration-300">
+              <div v-for="item in pendingAirdropCheckins" :key="item.id" class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3 hover:border-amber-500/50 hover:-translate-y-1 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10">
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="font-bold text-white">{{ item.profiles?.character_name || 'สมาชิก' }}</p>
@@ -264,18 +264,18 @@
                   <img :src="item.image_url" class="w-full h-36 object-cover rounded-md border border-slate-800 group-hover/img:scale-105 transition-transform duration-300" />
                 </a>
                 <div class="flex gap-2 pt-2 border-t border-slate-800">
-                  <button @click="handleApproveAirdrop(item.id, item.user_id, true)" class="flex-1 bg-green-600 hover:bg-green-700 active:scale-95 text-white text-xs py-1.5 rounded font-medium cursor-pointer transition shadow-md">อนุมัติ</button>
-                  <button @click="handleApproveAirdrop(item.id, item.user_id, false)" class="flex-1 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs py-1.5 rounded cursor-pointer transition">ปฏิเสธ</button>
+                  <button @click="handleApproveAirdrop(item.id, item.user_id, true)" class="flex-1 bg-green-600 hover:bg-green-700 hover:scale-105 active:scale-95 text-white text-xs py-1.5 rounded font-medium cursor-pointer transition-all duration-200 shadow-md shadow-green-600/20">อนุมัติ</button>
+                  <button @click="handleApproveAirdrop(item.id, item.user_id, false)" class="flex-1 bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-slate-300 text-xs py-1.5 rounded cursor-pointer transition-all duration-200">ปฏิเสธ</button>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- ตารางรายชื่อสมาชิก & สถานะลงแอร์ดรอป -->
-          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl hover:border-slate-700 transition-all duration-300">
             <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
               <h2 class="font-bold text-white">รายชื่อสมาชิกและสถานะการลงแอร์ดรอปประจำวัน</h2>
-              <button v-if="isManagement" @click="exportCSV" class="text-xs bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 cursor-pointer transition">
+              <button v-if="isManagement" @click="exportCSV" class="text-xs bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 cursor-pointer transition-all duration-200">
                 📥 ส่งออกไฟล์ CSV
               </button>
             </div>
@@ -347,7 +347,7 @@
                         <a 
                           :href="getLatestAirdropImage(member.id)" 
                           target="_blank" 
-                          class="bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 px-2.5 py-1 rounded text-xs border border-slate-700 flex items-center gap-1 transition active:scale-95"
+                          class="bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-blue-400 hover:text-blue-300 px-2.5 py-1 rounded text-xs border border-slate-700 flex items-center gap-1 transition-all duration-200"
                         >
                           📷 รูปหลักฐาน
                         </a>
@@ -357,7 +357,7 @@
                     <td v-if="isManagement" class="p-4 text-center">
                       <button 
                         @click="handleDeleteMember(member)" 
-                        class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs px-3 py-1 rounded-lg transition cursor-pointer active:scale-95"
+                        class="bg-red-500/10 hover:bg-red-500/20 hover:scale-105 active:scale-95 text-red-400 border border-red-500/30 text-xs px-3 py-1 rounded-lg transition-all duration-200 cursor-pointer"
                       >
                         ลบออก
                       </button>
@@ -371,7 +371,7 @@
 
         <!-- Tab 2: กฎแก๊ง PUKPIK -->
         <div v-else-if="activeTab === 'rules'" key="rules" class="space-y-6">
-          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
+          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl hover:border-slate-700 transition-all duration-300">
             <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
               <div>
                 <h2 class="text-xl font-bold text-white flex items-center gap-2">
@@ -382,7 +382,7 @@
               <button 
                 v-if="isManagement" 
                 @click="openAddRuleModal" 
-                class="bg-red-600 hover:bg-red-700 active:scale-95 text-white text-xs px-4 py-2 rounded-lg font-bold transition shadow-lg shadow-red-600/20 cursor-pointer"
+                class="bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 text-white text-xs px-4 py-2 rounded-lg font-bold transition-all duration-200 shadow-lg shadow-red-600/20 cursor-pointer"
               >
                 ➕ เพิ่มกฎข้อใหม่
               </button>
@@ -392,7 +392,7 @@
               <div 
                 v-for="rule in getArray(store.rulesList)" 
                 :key="rule.id" 
-                class="bg-slate-950/60 p-5 rounded-xl border border-slate-800/80 hover:border-red-500/40 hover:bg-slate-900/50 transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 group"
+                class="bg-slate-950/60 p-5 rounded-xl border border-slate-800/80 hover:border-red-500/40 hover:bg-slate-900/50 hover:-translate-y-1 transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 group hover:shadow-lg hover:shadow-red-950/20"
               >
                 <div class="space-y-1">
                   <div class="flex items-center gap-2">
@@ -405,8 +405,8 @@
                 </div>
 
                 <div v-if="isManagement" class="flex items-center gap-2 shrink-0">
-                  <button @click="openEditRuleModal(rule)" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 text-xs px-3 py-1.5 rounded border border-slate-700 cursor-pointer transition">✏️ แก้ไข</button>
-                  <button @click="handleDeleteRule(rule.id)" class="bg-red-500/10 hover:bg-red-500/20 active:scale-95 text-red-400 text-xs px-3 py-1.5 rounded border border-red-500/30 cursor-pointer transition">🗑️ ลบ</button>
+                  <button @click="openEditRuleModal(rule)" class="bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-slate-200 text-xs px-3 py-1.5 rounded border border-slate-700 cursor-pointer transition-all duration-200">✏️ แก้ไข</button>
+                  <button @click="handleDeleteRule(rule.id)" class="bg-red-500/10 hover:bg-red-500/20 hover:scale-105 active:scale-95 text-red-400 text-xs px-3 py-1.5 rounded border border-red-500/30 cursor-pointer transition-all duration-200">🗑️ ลบ</button>
                 </div>
               </div>
 
@@ -420,8 +420,8 @@
         <!-- Tab 3: โปรไฟล์ & ค่าปรับ -->
         <div v-else-if="activeTab === 'profile'" key="profile" class="space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl flex flex-col items-center text-center hover:border-slate-700 transition duration-300">
-              <div class="w-24 h-24 rounded-full bg-slate-800 border-2 border-red-500/50 flex items-center justify-center text-4xl mb-4 shadow-lg shadow-red-500/10 animate-bounce" style="animation-duration: 3s;">
+            <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl flex flex-col items-center text-center hover:border-slate-700 transition duration-300 hover:shadow-2xl">
+              <div class="w-24 h-24 rounded-full bg-slate-800 border-2 border-red-500/50 flex items-center justify-center text-4xl mb-4 shadow-lg shadow-red-500/10 animate-bounce hover:scale-110 transition-transform duration-300 cursor-pointer" style="animation-duration: 3s;">
                 👤
               </div>
               <h2 class="text-xl font-bold text-white">{{ currentUserProfile?.character_name }}</h2>
@@ -431,29 +431,29 @@
 
               <button 
                 @click="openEditProfileModal" 
-                class="mt-4 w-full bg-slate-800 hover:bg-slate-700 active:scale-95 text-red-400 hover:text-red-300 border border-slate-700 hover:border-red-500/40 text-xs py-2 rounded-lg transition font-medium cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
+                class="mt-4 w-full bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-red-400 hover:text-red-300 border border-slate-700 hover:border-red-500/40 text-xs py-2 rounded-lg transition-all duration-200 font-medium cursor-pointer flex items-center justify-center gap-1.5 shadow-sm"
               >
                 ✏️ แก้ไขข้อมูลโปรไฟล์
               </button>
             </div>
 
-            <div class="md:col-span-2 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl flex flex-col justify-between hover:border-slate-700 transition duration-300">
+            <div class="md:col-span-2 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl flex flex-col justify-between hover:border-slate-700 transition duration-300 hover:shadow-2xl">
               <div>
                 <p class="text-xs text-slate-400 mb-1">ยอดเงินโดนปรับ/ค้างชำระทั้งหมด (Fine Balance)</p>
-                <p class="text-4xl font-black font-mono tracking-tight" :class="(currentUserProfile?.fine_balance || 0) > 0 ? 'text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]' : 'text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.3)]'">
+                <p class="text-4xl font-black font-mono tracking-tight transition-transform duration-300 hover:scale-105 origin-left" :class="(currentUserProfile?.fine_balance || 0) > 0 ? 'text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.3)]' : 'text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.3)]'">
                   ${{ (currentUserProfile?.fine_balance || 0).toLocaleString() }}
                 </p>
               </div>
-              <div class="mt-4 p-4 bg-slate-950/80 rounded-lg border border-slate-800 text-xs text-slate-400">
+              <div class="mt-4 p-4 bg-slate-950/80 rounded-lg border border-slate-800 text-xs text-slate-400 hover:border-slate-700 transition duration-200">
                 ℹ️ หากต้องการชำระค่าปรับ สามารถแนบสลิปส่งเงินได้ที่เมนู <b>"คลังเงินแก๊ง"</b> เพื่อให้ยศบริหารตัดยอดหนี้ให้ครับ
               </div>
             </div>
           </div>
 
-          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl hover:border-slate-700 transition-all duration-300">
             <div class="p-4 border-b border-slate-800 font-bold text-white bg-slate-900/50">ประวัติค่าปรับและการชำระเงินส่วนตัว</div>
             <div class="divide-y divide-slate-800/80">
-              <div v-for="log in myFineLogs" :key="log.id" class="p-4 flex justify-between items-center hover:bg-slate-800/30 transition">
+              <div v-for="log in myFineLogs" :key="log.id" class="p-4 flex justify-between items-center hover:bg-slate-800/30 transition-colors duration-200">
                 <div>
                   <p class="font-medium text-white text-sm">{{ log.reason }}</p>
                   <p class="text-xs text-slate-500">{{ new Date(log.created_at).toLocaleString() }}</p>
@@ -471,34 +471,34 @@
 
         <!-- Tab 4: คลังเงินแก๊ง -->
         <div v-else-if="activeTab === 'treasury'" key="treasury" class="space-y-6">
-          <div class="bg-gradient-to-r from-slate-900/90 via-slate-900/90 to-red-950/80 border border-slate-800 rounded-xl p-6 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 backdrop-blur hover:border-slate-700 transition duration-300">
+          <div class="bg-gradient-to-r from-slate-900/90 via-slate-900/90 to-red-950/80 border border-slate-800 rounded-xl p-6 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 backdrop-blur hover:border-slate-700 transition-all duration-300 hover:shadow-2xl">
             <div>
               <p class="text-xs text-slate-400 mb-1">ยอดเงินคงเหลือในคลังแก๊ง</p>
-              <p class="text-4xl font-black text-green-400 font-mono tracking-tight drop-shadow-[0_0_12px_rgba(74,222,128,0.25)]">${{ (getVal(store.totalBalance) || 0).toLocaleString() }}</p>
+              <p class="text-4xl font-black text-green-400 font-mono tracking-tight drop-shadow-[0_0_12px_rgba(74,222,128,0.25)] hover:scale-105 transition-transform duration-300 origin-left">${{ (getVal(store.totalBalance) || 0).toLocaleString() }}</p>
             </div>
 
             <button 
               v-if="isManagement"
               @click="showWithdrawModal = true"
-              class="bg-red-600 hover:bg-red-700 active:scale-95 text-white text-xs px-5 py-2.5 rounded-xl font-bold transition shadow-lg shadow-red-600/30 flex items-center gap-2 cursor-pointer border border-red-500/50 shrink-0"
+              class="bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 text-white text-xs px-5 py-2.5 rounded-xl font-bold transition-all duration-200 shadow-lg shadow-red-600/30 flex items-center gap-2 cursor-pointer border border-red-500/50 shrink-0"
             >
               💸 เบิกเงินออกจากคลังแก๊ง
             </button>
           </div>
 
-          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
+          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl hover:border-slate-700 transition duration-300">
             <h2 class="text-lg font-bold text-white mb-1">💳 นำส่งสลิปเงินเข้าคลังแก๊ง</h2>
             <p class="text-xs text-slate-400 mb-4">สมาชิกสามารถแนบสลิปเพื่อขอฝากเงิน, โดเนท หรือชำระค่าปรับได้ทันที</p>
             
             <form @submit.prevent="handleDepositSubmit" class="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label class="block text-xs text-slate-400 mb-1">จำนวนเงิน ($)</label>
-                <input v-model.number="depositForm.amount" type="number" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition" />
+                <input v-model.number="depositForm.amount" type="number" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200" />
               </div>
 
               <div>
                 <label class="block text-xs text-slate-400 mb-1">หมวดหมู่รายการ</label>
-                <select v-model="depositForm.category" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition">
+                <select v-model="depositForm.category" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200">
                   <option value="ส่งเงินแก๊ง">ส่งเงินแก๊ง</option>
                   <option value="โดเนทให้แก๊ง">โดเนทให้แก๊ง</option>
                   <option value="จ่ายค่าปรับแอร์ดรอป">จ่ายค่าปรับแอร์ดรอป</option>
@@ -507,11 +507,11 @@
 
               <div>
                 <label class="block text-xs text-slate-400 mb-1">แนบรูปสลิปโอนเงิน</label>
-                <input type="file" accept="image/*" @change="handleDepositFileSelect" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-300 file:bg-slate-800 file:text-slate-200 file:border-0 file:rounded cursor-pointer focus:outline-none focus:border-red-500 transition" />
+                <input type="file" accept="image/*" @change="handleDepositFileSelect" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-300 file:bg-slate-800 file:text-slate-200 file:border-0 file:rounded cursor-pointer focus:outline-none focus:border-red-500 transition-all duration-200" />
               </div>
 
               <div class="flex items-end">
-                <button type="submit" :disabled="isUploadingDeposit" class="w-full bg-green-600 hover:bg-green-700 active:scale-95 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer shadow-lg shadow-green-600/20 font-bold flex items-center justify-center gap-2">
+                <button type="submit" :disabled="isUploadingDeposit" class="w-full bg-green-600 hover:bg-green-700 hover:scale-[1.02] active:scale-95 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer shadow-lg shadow-green-600/20 font-bold flex items-center justify-center gap-2">
                   <span v-if="isUploadingDeposit" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                   <span>{{ isUploadingDeposit ? 'กำลังประมวลผล...' : 'ส่งสลิปโอนเงิน' }}</span>
                 </button>
@@ -525,7 +525,7 @@
               💳 รายการสลิปส่งเงินรออนุมัติ ({{ pendingDeposits.length }})
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div v-for="dep in pendingDeposits" :key="dep.id" class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3 hover:border-amber-500/40 transition duration-300">
+              <div v-for="dep in pendingDeposits" :key="dep.id" class="bg-slate-950 p-4 rounded-lg border border-slate-800 space-y-3 hover:border-amber-500/50 hover:-translate-y-1 transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/10">
                 <div class="flex justify-between items-start">
                   <div>
                     <p class="font-bold text-white">{{ dep.profiles?.character_name || 'สมาชิก' }}</p>
@@ -538,17 +538,17 @@
                   <img :src="dep.slip_url" class="w-full h-36 object-cover rounded-md border border-slate-800 group-hover/slip:scale-105 transition-transform duration-300" />
                 </a>
                 <div class="flex gap-2 pt-2 border-t border-slate-800">
-                  <button @click="handleApproveDeposit(dep, true)" class="flex-1 bg-green-600 hover:bg-green-700 active:scale-95 text-white text-xs py-1.5 rounded font-medium cursor-pointer transition shadow-md">อนุมัติเงินเข้าคลัง</button>
-                  <button @click="handleApproveDeposit(dep, false)" class="flex-1 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs py-1.5 rounded cursor-pointer transition">ปฏิเสธ</button>
+                  <button @click="handleApproveDeposit(dep, true)" class="flex-1 bg-green-600 hover:bg-green-700 hover:scale-105 active:scale-95 text-white text-xs py-1.5 rounded font-medium cursor-pointer transition-all duration-200 shadow-md shadow-green-600/20">อนุมัติเงินเข้าคลัง</button>
+                  <button @click="handleApproveDeposit(dep, false)" class="flex-1 bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-slate-300 text-xs py-1.5 rounded cursor-pointer transition-all duration-200">ปฏิเสธ</button>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl hover:border-slate-700 transition-all duration-300">
             <div class="p-4 border-b border-slate-800 font-bold text-white bg-slate-900/50">ประวัติการธุรกรรม</div>
             <div class="divide-y divide-slate-800/80">
-              <div v-for="log in getArray(store.treasuryLogs)" :key="log.id" class="p-4 flex justify-between items-center hover:bg-slate-800/30 transition">
+              <div v-for="log in getArray(store.treasuryLogs)" :key="log.id" class="p-4 flex justify-between items-center hover:bg-slate-800/30 transition-colors duration-200">
                 <div>
                   <p class="font-medium text-white">{{ log.description }}</p>
                   <p class="text-xs text-slate-500">ผู้อนุมัติ/ทำรายการ: {{ log.created_by }} • {{ new Date(log.created_at).toLocaleString() }}</p>
@@ -563,27 +563,27 @@
 
         <!-- Tab 5: คลังของแก๊ง -->
         <div v-else-if="activeTab === 'inventory'" key="inventory" class="space-y-6">
-          <div v-if="canManageInventory" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
+          <div v-if="canManageInventory" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl hover:border-slate-700 transition duration-300">
             <h2 class="text-lg font-bold text-white mb-4">เพิ่มไอเทมใหม่เข้าคลังแก๊ง</h2>
             <form @submit.prevent="handleAddInventory" class="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div>
                 <label class="block text-xs text-slate-400 mb-1">ชื่อไอเทม</label>
-                <input v-model="itemForm.name" type="text" placeholder="เช่น AED PainKiller, เกราะ" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition" />
+                <input v-model="itemForm.name" type="text" placeholder="เช่น AED PainKiller, เกราะ" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200" />
               </div>
               <div>
                 <label class="block text-xs text-slate-400 mb-1">หมวดหมู่</label>
-                <input v-model="itemForm.category" type="text" placeholder="เช่น ยา, ทั่วไป" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition" />
+                <input v-model="itemForm.category" type="text" placeholder="เช่น ยา, ทั่วไป" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200" />
               </div>
               <div>
                 <label class="block text-xs text-slate-400 mb-1">จำนวนเริ่มต้น</label>
-                <input v-model.number="itemForm.quantity" type="number" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition" />
+                <input v-model.number="itemForm.quantity" type="number" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200" />
               </div>
               <div>
                 <label class="block text-xs text-slate-400 mb-1">รูปไอเทม (ถ้ามี)</label>
-                <input type="file" accept="image/*" @change="handleItemFileSelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-300 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-slate-800 file:text-slate-200 cursor-pointer focus:outline-none focus:border-red-500 transition" />
+                <input type="file" accept="image/*" @change="handleItemFileSelect" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-300 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-slate-800 file:text-slate-200 cursor-pointer focus:outline-none focus:border-red-500 transition-all duration-200" />
               </div>
               <div class="flex items-end">
-                <button type="submit" :disabled="isUploadingItem" class="w-full bg-red-600 hover:bg-red-700 active:scale-95 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer shadow-lg shadow-red-600/20 font-bold flex items-center justify-center gap-2">
+                <button type="submit" :disabled="isUploadingItem" class="w-full bg-red-600 hover:bg-red-700 hover:scale-[1.02] active:scale-95 disabled:bg-slate-700 text-white font-medium py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer shadow-lg shadow-red-600/20 font-bold flex items-center justify-center gap-2">
                   <span v-if="isUploadingItem" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
                   <span>{{ isUploadingItem ? 'กำลังประมวลผล...' : 'เพิ่มเข้าคลัง' }}</span>
                 </button>
@@ -591,9 +591,9 @@
             </form>
           </div>
 
-          <div v-else class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-4 shadow-xl flex items-center justify-between">
+          <div v-else class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-4 shadow-xl flex items-center justify-between hover:border-slate-700 transition duration-300">
             <div class="flex items-center gap-3">
-              <span class="text-2xl">📦</span>
+              <span class="text-2xl animate-bounce">📦</span>
               <div>
                 <h3 class="font-bold text-white text-sm">คลังไอเทมแก๊ง</h3>
                 <p class="text-xs text-slate-400">คุณสามารถตรวจสอบจำนวนไอเทมในคลังได้ (หากต้องการขอเบิกของ กรุณายื่นคำร้องหรือติดต่อคนเก็บของแก๊ง)</p>
@@ -606,7 +606,7 @@
             <div 
               v-for="item in getArray(store.inventory)" 
               :key="item.id" 
-              class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl flex flex-col justify-between hover:border-red-500/60 hover:-translate-y-1.5 hover:shadow-red-950/30 transition-all duration-300 group"
+              class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl flex flex-col justify-between hover:border-red-500/60 hover:-translate-y-2 hover:shadow-2xl hover:shadow-red-950/40 transition-all duration-300 group"
             >
               <div class="relative h-40 bg-slate-950 flex items-center justify-center border-b border-slate-800/80 overflow-hidden">
                 <img v-if="item.image_url" :src="item.image_url" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
@@ -618,22 +618,22 @@
 
               <div class="p-4 space-y-3">
                 <div>
-                  <h3 class="font-bold text-base text-white truncate group-hover:text-red-400 transition-colors">{{ item.item_name }}</h3>
-                  <p class="text-2xl font-mono font-black text-red-500 my-1 drop-shadow-sm">
+                  <h3 class="font-bold text-base text-white truncate group-hover:text-red-400 transition-colors duration-300">{{ item.item_name }}</h3>
+                  <p class="text-2xl font-mono font-black text-red-500 my-1 drop-shadow-sm group-hover:scale-105 transition-transform origin-left">
                     {{ Number(item.quantity).toLocaleString() }} <span class="text-xs text-slate-500 font-normal">ชิ้น</span>
                   </p>
                 </div>
 
                 <div v-if="canManageInventory" class="pt-3 border-t border-slate-800/80 space-y-2">
                   <div class="flex gap-1.5">
-                    <button @click="openQtyAdjustModal(item, 'add')" class="flex-1 bg-green-600/20 hover:bg-green-600/30 active:scale-95 text-green-400 border border-green-500/30 text-xs py-1 rounded font-bold cursor-pointer transition">
+                    <button @click="openQtyAdjustModal(item, 'add')" class="flex-1 bg-green-600/20 hover:bg-green-600/30 hover:scale-105 active:scale-95 text-green-400 border border-green-500/30 text-xs py-1 rounded font-bold cursor-pointer transition-all duration-200 shadow-sm">
                       + เพิ่มของ
                     </button>
-                    <button @click="openQtyAdjustModal(item, 'sub')" class="flex-1 bg-red-600/20 hover:bg-red-600/30 active:scale-95 text-red-400 border border-red-500/30 text-xs py-1 rounded font-bold cursor-pointer transition">
+                    <button @click="openQtyAdjustModal(item, 'sub')" class="flex-1 bg-red-600/20 hover:bg-red-600/30 hover:scale-105 active:scale-95 text-red-400 border border-red-500/30 text-xs py-1 rounded font-bold cursor-pointer transition-all duration-200 shadow-sm">
                       - เบิกออก
                     </button>
                   </div>
-                  <button @click="store.deleteInventoryItem(item.id)" class="w-full text-center text-xs text-slate-500 hover:text-red-400 hover:underline cursor-pointer py-0.5 transition">
+                  <button @click="store.deleteInventoryItem(item.id)" class="w-full text-center text-xs text-slate-500 hover:text-red-400 hover:underline cursor-pointer py-0.5 transition-colors duration-200">
                     ลบรายการนี้
                   </button>
                 </div>
@@ -644,17 +644,17 @@
 
         <!-- Tab 6: คำร้องสมาชิก -->
         <div v-else-if="activeTab === 'tickets'" key="tickets" class="space-y-6">
-          <div v-if="!isManagement" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl">
+          <div v-if="!isManagement" class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl p-6 shadow-xl hover:border-slate-700 transition duration-300">
             <h2 class="text-lg font-bold text-white mb-4">ยื่นคำร้องใหม่ถึงหัวหน้าแก๊ง</h2>
             <form @submit.prevent="handleTicket" class="space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs text-slate-400 mb-1">หัวข้อคำร้อง</label>
-                  <input v-model="ticketForm.title" type="text" placeholder="เช่น ขอเบิกเงินตีอาวุธ" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition" />
+                  <input v-model="ticketForm.title" type="text" placeholder="เช่น ขอเบิกเงินตีอาวุธ" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200" />
                 </div>
                 <div>
                   <label class="block text-xs text-slate-400 mb-1">หมวดหมู่</label>
-                  <select v-model="ticketForm.category" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 transition">
+                  <select v-model="ticketForm.category" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200">
                     <option value="เบิกของ/เงิน">เบิกของ / เบิกเงิน</option>
                     <option value="เรื่องอื่นๆ">เรื่องอื่นๆ</option>
                   </select>
@@ -662,15 +662,15 @@
               </div>
               <div>
                 <label class="block text-xs text-slate-400 mb-1">รายละเอียด</label>
-                <textarea v-model="ticketForm.detail" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-red-500 transition"></textarea>
+                <textarea v-model="ticketForm.detail" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200"></textarea>
               </div>
-              <button type="submit" class="bg-red-600 hover:bg-red-700 active:scale-95 text-white font-medium px-6 py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer shadow-lg shadow-red-600/20 font-bold">
+              <button type="submit" class="bg-red-600 hover:bg-red-700 hover:scale-[1.02] active:scale-95 text-white font-medium px-6 py-2 rounded-lg text-sm transition-all duration-200 cursor-pointer shadow-lg shadow-red-600/20 font-bold">
                 ส่งคำร้อง
               </button>
             </form>
           </div>
 
-          <div v-else class="bg-slate-900/90 backdrop-blur border border-red-500/30 rounded-xl p-4 shadow-xl flex items-center gap-3">
+          <div v-else class="bg-slate-900/90 backdrop-blur border border-red-500/30 rounded-xl p-4 shadow-xl flex items-center gap-3 hover:border-red-500/50 transition duration-300">
             <span class="text-2xl animate-pulse">📋</span>
             <div>
               <h3 class="font-bold text-white text-sm">การจัดการคำร้องของสมาชิก (สำหรับหัวหน้า/รอง)</h3>
@@ -678,7 +678,7 @@
             </div>
           </div>
 
-          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+          <div class="bg-slate-900/90 backdrop-blur border border-slate-800 rounded-xl overflow-hidden shadow-xl hover:border-slate-700 transition-all duration-300">
             <div class="p-4 border-b border-slate-800 font-bold text-white flex justify-between items-center bg-slate-900/50">
               <span>รายการคำร้องทั้งหมด</span>
               <span v-if="isManagement" class="text-xs font-normal text-amber-400">
@@ -686,22 +686,22 @@
               </span>
             </div>
             <div class="divide-y divide-slate-800/80">
-              <div v-for="ticket in getArray(store.tickets)" :key="ticket.id" class="p-5 space-y-2 hover:bg-slate-800/30 transition">
+              <div v-for="ticket in getArray(store.tickets)" :key="ticket.id" class="p-5 space-y-2 hover:bg-slate-800/30 transition-all duration-200">
                 <div class="flex justify-between items-start">
                   <div>
                     <span class="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700 mr-2">{{ ticket.category }}</span>
                     <h3 class="font-bold text-white inline-block">{{ ticket.title }}</h3>
                     <p class="text-xs text-slate-500 mt-1">ผู้ยื่น: {{ ticket.profiles?.character_name || 'สมาชิก' }} • {{ new Date(ticket.created_at).toLocaleString() }}</p>
                   </div>
-                  <span :class="getTicketBadge(ticket.status)" class="px-2.5 py-1 rounded-full text-xs font-semibold">
+                  <span :class="getTicketBadge(ticket.status)" class="px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm">
                     {{ getTicketStatusText(ticket.status) }}
                   </span>
                 </div>
                 <p class="text-sm text-slate-300 bg-slate-950/80 p-3 rounded-lg border border-slate-800/50">{{ ticket.detail }}</p>
                 
                 <div v-if="isManagement" class="flex gap-2 pt-2">
-                  <button @click="store.updateTicketStatus(ticket.id, 'approved')" class="bg-green-600 hover:bg-green-700 active:scale-95 text-white text-xs px-4 py-1.5 rounded font-medium cursor-pointer transition shadow-md">อนุมัติคำร้อง</button>
-                  <button @click="store.updateTicketStatus(ticket.id, 'rejected')" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs py-1.5 rounded cursor-pointer transition">ไม่อนุมัติ</button>
+                  <button @click="store.updateTicketStatus(ticket.id, 'approved')" class="bg-green-600 hover:bg-green-700 hover:scale-105 active:scale-95 text-white text-xs px-4 py-1.5 rounded font-medium cursor-pointer transition-all duration-200 shadow-md shadow-green-600/20">อนุมัติคำร้อง</button>
+                  <button @click="store.updateTicketStatus(ticket.id, 'rejected')" class="bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-slate-300 text-xs px-4 py-1.5 rounded cursor-pointer transition-all duration-200">ไม่อนุมัติ</button>
                 </div>
               </div>
               <div v-if="getArray(store.tickets).length === 0" class="p-8 text-center text-slate-500 text-sm">
@@ -716,8 +716,8 @@
     <!-- 🚨 Custom Notification & Confirmation Modal -->
     <transition name="modal-pop">
       <div v-if="alertModal.show" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-        <div class="bg-slate-900 border border-slate-700/80 w-full max-w-sm rounded-2xl p-6 text-center space-y-4 shadow-2xl relative overflow-hidden">
-          <div class="w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl shadow-inner" :class="alertModal.isConfirm ? 'bg-amber-500/20 border border-amber-500/40 text-amber-400' : 'bg-red-500/20 border border-red-500/40 text-red-400'">
+        <div class="bg-slate-900 border border-slate-700/80 w-full max-w-sm rounded-2xl p-6 text-center space-y-4 shadow-2xl relative overflow-hidden transform transition-all">
+          <div class="w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl shadow-inner animate-bounce" :class="alertModal.isConfirm ? 'bg-amber-500/20 border border-amber-500/40 text-amber-400' : 'bg-red-500/20 border border-red-500/40 text-red-400'">
             {{ alertModal.icon }}
           </div>
           
@@ -730,13 +730,13 @@
             <button 
               v-if="alertModal.isConfirm" 
               @click="closeAlert(false)" 
-              class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs rounded-xl font-medium transition cursor-pointer"
+              class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-slate-300 text-xs rounded-xl font-medium transition-all duration-200 cursor-pointer"
             >
               ยกเลิก
             </button>
             <button 
               @click="closeAlert(true)" 
-              class="flex-1 py-2 bg-red-600 hover:bg-red-500 active:scale-95 text-white text-xs rounded-xl font-bold shadow-lg shadow-red-600/30 transition cursor-pointer"
+              class="flex-1 py-2 bg-red-600 hover:bg-red-500 hover:scale-105 active:scale-95 text-white text-xs rounded-xl font-bold shadow-lg shadow-red-600/30 transition-all duration-200 cursor-pointer"
             >
               {{ alertModal.isConfirm ? 'ยืนยัน' : 'ตกลง' }}
             </button>
@@ -753,11 +753,11 @@
           <p class="text-xs text-slate-400">กรุณาระบุสาเหตุการลา คำขอจะส่งไปยังหัวหน้า/รองหัวหน้าแก๊งเพื่อพิจารณาอนุมัติ</p>
           <div>
             <label class="block text-xs text-slate-300 mb-1">สาเหตุการลา</label>
-            <textarea v-model="leaveReason" rows="3" placeholder="เช่น ติดภารกิจต่างจังหวัด, ไม่สบาย" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-red-500 transition"></textarea>
+            <textarea v-model="leaveReason" rows="3" placeholder="เช่น ติดภารกิจต่างจังหวัด, ไม่สบาย" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200"></textarea>
           </div>
           <div class="flex gap-2 justify-end pt-2">
-            <button @click="showLeaveModal = false" :disabled="isSubmittingLeave" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 disabled:opacity-50 text-slate-300 text-xs rounded-lg cursor-pointer transition">ยกเลิก</button>
-            <button @click="handleLeaveSubmit" :disabled="isSubmittingLeave" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 active:scale-95 disabled:bg-slate-700 disabled:cursor-not-allowed text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-amber-600/20 transition flex items-center gap-1.5">
+            <button @click="showLeaveModal = false" :disabled="isSubmittingLeave" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 disabled:opacity-50 text-slate-300 text-xs rounded-lg cursor-pointer transition-all duration-200">ยกเลิก</button>
+            <button @click="handleLeaveSubmit" :disabled="isSubmittingLeave" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 hover:scale-105 active:scale-95 disabled:bg-slate-700 disabled:cursor-not-allowed text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-amber-600/20 transition-all duration-200 flex items-center gap-1.5">
               <span v-if="isSubmittingLeave" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               <span>{{ isSubmittingLeave ? 'กำลังประมวลผล...' : 'ยื่นคำขอลา' }}</span>
             </button>
@@ -776,12 +776,12 @@
           
           <div>
             <label class="block text-xs text-slate-300 mb-1">กรอกจำนวนที่ต้องการ {{ qtyModalMode === 'add' ? 'เพิ่ม' : 'ลด' }}</label>
-            <input v-model.number="customQtyAmount" type="number" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-red-500 transition" />
+            <input v-model.number="customQtyAmount" type="number" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200" />
           </div>
 
           <div class="flex gap-2 justify-end pt-2">
-            <button @click="showQtyModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs rounded-lg cursor-pointer transition">ยกเลิก</button>
-            <button @click="submitCustomQty" class="px-4 py-2 bg-red-600 hover:bg-red-700 active:scale-95 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20 transition">ยืนยัน</button>
+            <button @click="showQtyModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-slate-300 text-xs rounded-lg cursor-pointer transition-all duration-200">ยกเลิก</button>
+            <button @click="submitCustomQty" class="px-4 py-2 bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20 transition-all duration-200">ยืนยัน</button>
           </div>
         </div>
       </div>
@@ -795,21 +795,21 @@
           <div class="space-y-3">
             <div>
               <label class="block text-xs text-slate-300 mb-1">ลำดับข้อ (เช่น 1, 2, 3)</label>
-              <input v-model.number="ruleForm.rule_number" type="number" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-red-500 transition" />
+              <input v-model.number="ruleForm.rule_number" type="number" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200" />
             </div>
             <div>
               <label class="block text-xs text-slate-300 mb-1">หัวข้อกฎ</label>
-              <input v-model="ruleForm.title" type="text" placeholder="เช่น การเข้าร่วมกิจกรรมสภา" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-red-500 transition" />
+              <input v-model="ruleForm.title" type="text" placeholder="เช่น การเข้าร่วมกิจกรรมสภา" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-xs text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200" />
             </div>
             <div>
               <label class="block text-xs text-slate-300 mb-1">รายละเอียดกฎระเบียบ</label>
-              <textarea v-model="ruleForm.content" rows="4" placeholder="พิมพ์เนื้อหากฎระเบียบอย่างละเอียดที่นี่..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-red-500 transition"></textarea>
+              <textarea v-model="ruleForm.content" rows="4" placeholder="พิมพ์เนื้อหากฎระเบียบอย่างละเอียดที่นี่..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200"></textarea>
             </div>
           </div>
 
           <div class="flex gap-2 justify-end pt-2">
-            <button @click="showRuleModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs rounded-lg cursor-pointer transition">ยกเลิก</button>
-            <button @click="handleSaveSingleRule" class="px-4 py-2 bg-red-600 hover:bg-red-700 active:scale-95 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20 transition">บันทึกกฎ</button>
+            <button @click="showRuleModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-slate-300 text-xs rounded-lg cursor-pointer transition-all duration-200">ยกเลิก</button>
+            <button @click="handleSaveSingleRule" class="px-4 py-2 bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20 transition-all duration-200">บันทึกกฎ</button>
           </div>
         </div>
       </div>
@@ -824,17 +824,17 @@
           <div class="space-y-3">
             <div>
               <label class="block text-xs text-slate-300 mb-1">จำนวนเงิน ($)</label>
-              <input v-model.number="withdrawForm.amount" type="number" min="1" placeholder="ระบุจำนวนเงิน" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-red-500 transition" />
+              <input v-model.number="withdrawForm.amount" type="number" min="1" placeholder="ระบุจำนวนเงิน" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-sm text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200" />
             </div>
             <div>
               <label class="block text-xs text-slate-300 mb-1">เหตุผลในการเบิกเงิน</label>
-              <textarea v-model="withdrawForm.reason" rows="3" placeholder="เช่น ซื้ออาวุธสงคราม, ซื้อยา, จัดกิจกรรม" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-red-500 transition"></textarea>
+              <textarea v-model="withdrawForm.reason" rows="3" placeholder="เช่น ซื้ออาวุธสงคราม, ซื้อยา, จัดกิจกรรม" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200"></textarea>
             </div>
           </div>
 
           <div class="flex gap-2 justify-end pt-2">
-            <button @click="showWithdrawModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs rounded-lg cursor-pointer transition">ยกเลิก</button>
-            <button @click="handleWithdrawSubmit" :disabled="isWithdrawing" class="px-4 py-2 bg-red-600 hover:bg-red-700 active:scale-95 disabled:bg-slate-700 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20 transition flex items-center gap-1.5">
+            <button @click="showWithdrawModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-slate-300 text-xs rounded-lg cursor-pointer transition-all duration-200">ยกเลิก</button>
+            <button @click="handleWithdrawSubmit" :disabled="isWithdrawing" class="px-4 py-2 bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 disabled:bg-slate-700 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20 transition-all duration-200 flex items-center gap-1.5">
               <span v-if="isWithdrawing" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               <span>{{ isWithdrawing ? 'กำลังประมวลผล...' : 'ยืนยันการเบิกเงิน' }}</span>
             </button>
@@ -852,21 +852,21 @@
           <div class="space-y-3">
             <div>
               <label class="block text-xs text-slate-300 mb-1">รหัสผ่าน (Password)</label>
-              <input v-model="profileForm.username" type="text" placeholder="ระบุ Password" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-red-500 transition" />
+              <input v-model="profileForm.username" type="text" placeholder="ระบุ Password" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200" />
             </div>
             <div>
               <label class="block text-xs text-slate-300 mb-1">ชื่อในเมือง (Character Name)</label>
-              <input v-model="profileForm.character_name" type="text" placeholder="ระบุ ชื่อในเมือง" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-red-500 transition" />
+              <input v-model="profileForm.character_name" type="text" placeholder="ระบุ ชื่อในเมือง" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200" />
             </div>
             <div>
               <label class="block text-xs text-slate-300 mb-1">เบอร์โทรศัพท์</label>
-              <input v-model="profileForm.phone_number" type="text" placeholder="ระบุ เบอร์โทร" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-red-500 transition" />
+              <input v-model="profileForm.phone_number" type="text" placeholder="ระบุ เบอร์โทร" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200" />
             </div>
           </div>
 
           <div class="flex gap-2 justify-end pt-2">
-            <button @click="showEditProfileModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs rounded-lg cursor-pointer transition">ยกเลิก</button>
-            <button @click="handleUpdateProfile" :disabled="isUpdatingProfile" class="px-4 py-2 bg-red-600 hover:bg-red-700 active:scale-95 disabled:bg-slate-700 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20 transition flex items-center gap-1.5">
+            <button @click="showEditProfileModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-slate-300 text-xs rounded-lg cursor-pointer transition-all duration-200">ยกเลิก</button>
+            <button @click="handleUpdateProfile" :disabled="isUpdatingProfile" class="px-4 py-2 bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 disabled:bg-slate-700 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20 transition-all duration-200 flex items-center gap-1.5">
               <span v-if="isUpdatingProfile" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               <span>{{ isUpdatingProfile ? 'กำลังประมวลผล...' : 'บันทึกการเปลี่ยนแปลง' }}</span>
             </button>
@@ -884,7 +884,7 @@
           <div class="space-y-3">
             <div>
               <label class="block text-xs text-slate-300 mb-1">ชื่อเพลง</label>
-              <input v-model="musicForm.title" type="text" placeholder="ระบุชื่อเพลง..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-red-500 transition" />
+              <input v-model="musicForm.title" type="text" placeholder="ระบุชื่อเพลง..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all duration-200" />
             </div>
             <div>
               <label class="block text-xs text-slate-300 mb-1">เลือกไฟล์เพลงจากในเครื่อง (.mp3, .wav, .m4a, .ogg)</label>
@@ -892,14 +892,14 @@
                 type="file" 
                 accept="audio/*" 
                 @change="handleMusicFileSelect" 
-                class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-300 file:bg-slate-800 file:text-slate-200 file:border-0 file:rounded file:px-2 file:py-1 cursor-pointer focus:outline-none focus:border-red-500 transition" 
+                class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-xs text-slate-300 file:bg-slate-800 file:text-slate-200 file:border-0 file:rounded file:px-2 file:py-1 cursor-pointer focus:outline-none focus:border-red-500 transition-all duration-200" 
               />
             </div>
           </div>
 
           <div class="flex gap-2 justify-end pt-2">
-            <button @click="showAddMusicModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs rounded-lg cursor-pointer transition">ยกเลิก</button>
-            <button @click="handleAddMusicSubmit" :disabled="isSavingMusic" class="px-4 py-2 bg-red-600 hover:bg-red-700 active:scale-95 disabled:bg-slate-700 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20 transition flex items-center gap-1.5">
+            <button @click="showAddMusicModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 hover:scale-105 active:scale-95 text-slate-300 text-xs rounded-lg cursor-pointer transition-all duration-200">ยกเลิก</button>
+            <button @click="handleAddMusicSubmit" :disabled="isSavingMusic" class="px-4 py-2 bg-red-600 hover:bg-red-700 hover:scale-105 active:scale-95 disabled:bg-slate-700 text-white text-xs rounded-lg font-bold cursor-pointer shadow-lg shadow-red-600/20 transition-all duration-200 flex items-center gap-1.5">
               <span v-if="isSavingMusic" class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               <span>{{ isSavingMusic ? 'กำลังประมวลผล...' : 'อัปโหลดเพลง' }}</span>
             </button>
@@ -1511,20 +1511,26 @@ const handleWithdrawSubmit = async () => {
   }
 }
 
-// Optimistic Update สำหรับอนุมัติสลิปส่งเงิน
+// อนุมัติ/ปฏิเสธสลิปส่งเงินเข้าคลัง
 const handleApproveDeposit = async (dep, isApproved) => {
   const reviewerName = currentUserProfile.value?.character_name || 'ผู้ดูแล'
   
-  if (store.pendingDeposits) {
-    const idx = store.pendingDeposits.findIndex(d => d.id === dep.id)
-    if (idx !== -1) store.pendingDeposits.splice(idx, 1)
-  }
-
-  showAlertMessage(isApproved ? 'อนุมัติเงินเข้าคลังเรียบร้อยแล้ว' : 'ปฏิเสธสลิปโอนเงินเรียบร้อยแล้ว', 'สำเร็จ', isApproved ? '✅' : 'ℹ️')
-  
-  const success = await store.approveDeposit(dep, isApproved, reviewerName)
-  if (!success && store.fetchPendingDeposits) {
-    await store.fetchPendingDeposits()
+  try {
+    const success = await store.approveDeposit(dep, isApproved, reviewerName)
+    if (success) {
+      if (store.pendingDeposits) {
+        const idx = store.pendingDeposits.findIndex(d => d.id === dep.id)
+        if (idx !== -1) store.pendingDeposits.splice(idx, 1)
+      }
+      await showAlertMessage(isApproved ? 'อนุมัติเงินเข้าคลังเรียบร้อยแล้ว' : 'ปฏิเสธสลิปโอนเงินเรียบร้อยแล้ว', 'สำเร็จ', isApproved ? '✅' : 'ℹ️')
+      if (store.fetchAllData) await store.fetchAllData()
+    } else {
+      await showAlertMessage('เกิดข้อผิดพลาดในการทำรายการ', 'เกิดข้อผิดพลาด', '❌')
+      if (store.fetchPendingDeposits) await store.fetchPendingDeposits()
+    }
+  } catch (e) {
+    console.error('Approve deposit error:', e)
+    await showAlertMessage('เกิดข้อผิดพลาดในการทำรายการ', 'เกิดข้อผิดพลาด', '❌')
   }
 }
 
@@ -1639,24 +1645,24 @@ const handleCheckin = async (mode) => {
     isUploadingAirdrop.value = true
     try {
       const fileName = `airdrop_${userId}_${Date.now()}.png`
-      const { data: uploadData, error: uploadErr } = await client.storage.from('checkins').upload(fileName, airdropFile.value)
+      const { data: uploadData, error: uploadErr } = await client.storage.from('airdrops').upload(fileName, airdropFile.value)
       if (uploadErr) throw uploadErr
 
-      const publicUrl = client.storage.from('checkins').getPublicUrl(fileName).data.publicUrl
+      const { data: urlData } = client.storage.from('airdrops').getPublicUrl(fileName)
       
       const { error: insertErr } = await client.from('airdrop_checkins').insert({
         user_id: userId,
-        image_url: publicUrl,
+        image_url: urlData.publicUrl,
         status: 'pending'
       })
       if (insertErr) throw insertErr
 
-      await showAlertMessage('ส่งหลักฐานเข้าร่วมแอร์ดรอปเรียบร้อยแล้ว! กรุณารอหัวแก๊งอนุมัติ', 'สำเร็จ', '🪂')
+      await showAlertMessage('ส่งหลักฐานเรียบร้อยแล้ว รอหัวแก๊งอนุมัติครับ', 'สำเร็จ', '✅')
       airdropFile.value = null
       await fetchAirdropCheckins()
     } catch (e) {
-      console.error(e)
-      await showAlertMessage('เกิดข้อผิดพลาดในการอัปโหลดหลักฐานแอร์ดรอป', 'เกิดข้อผิดพลาด', '❌')
+      console.error('Upload Error:', e)
+      await showAlertMessage('เกิดข้อผิดพลาดในการอัปโหลดหลักฐาน', 'เกิดข้อผิดพลาด', '❌')
     } finally {
       isUploadingAirdrop.value = false
     }
@@ -1664,155 +1670,185 @@ const handleCheckin = async (mode) => {
 }
 
 const handleApproveAirdrop = async (checkinId, userId, isApproved) => {
-  const status = isApproved ? 'approved' : 'rejected'
-  
-  const targetIndex = airdropCheckinsList.value.findIndex(item => item.id === checkinId)
-  if (targetIndex !== -1) {
-    airdropCheckinsList.value[targetIndex].status = status
-  }
-
-  showAlertMessage(isApproved ? 'อนุมัติการลงแอร์ดรอปเรียบร้อยแล้ว' : 'ปฏิเสธการลงแอร์ดรอปเรียบร้อยแล้ว', 'สำเร็จ', isApproved ? '✅' : 'ℹ️')
-
   try {
     const { error } = await client
       .from('airdrop_checkins')
-      .update({ status: status })
+      .update({ status: isApproved ? 'approved' : 'rejected' })
       .eq('id', checkinId)
 
     if (error) throw error
+
+    await showAlertMessage(isApproved ? 'อนุมัติการลงแอร์ดรอปเรียบร้อยแล้ว' : 'ปฏิเสธการลงแอร์ดรอปเรียบร้อยแล้ว', 'สำเร็จ', isApproved ? '✅' : 'ℹ️')
+    await fetchAirdropCheckins()
   } catch (e) {
     console.error('Approve Error:', e)
-    if (targetIndex !== -1) {
-      airdropCheckinsList.value[targetIndex].status = 'pending'
-    }
-    await showAlertMessage('เกิดข้อผิดพลาดในการอนุมัติ/ปฏิเสธ', 'เกิดข้อผิดพลาด', '❌')
+    await showAlertMessage('เกิดข้อผิดพลาดในการอนุมัติ', 'เกิดข้อผิดพลาด', '❌')
   }
 }
 
 const fetchMyFineLogs = async () => {
-  if (!currentUserProfile.value?.id) return
+  const userId = currentUserProfile.value?.id
+  if (!userId) return
   try {
-    const { data } = await client.from('fine_logs').select('*').eq('user_id', currentUserProfile.value.id).order('created_at', { ascending: false })
-    if (data) myFineLogs.value = data
+    const { data, error } = await client
+      .from('fine_logs')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+    if (!error && data) {
+      myFineLogs.value = data
+    }
   } catch (e) {
-    console.error('Error fetching fine logs:', e)
+    console.error('Fetch fine logs error:', e)
   }
 }
 
-const handleItemFileSelect = (event) => {
-  itemSelectedFile.value = event.target.files[0]
-}
-
-const handleDeleteMember = async (member) => {
-  const isConfirmed = await showConfirmDialog(`คุณแน่ใจหรือไม่ว่าต้องการลบ "${member.character_name}" ออกจากแก๊ง?`, 'ยืนยันการลบสมาชิก', '⚠️')
-  if (isConfirmed) {
-    const success = await store.deleteMember(member.id)
-    if (success) await showAlertMessage(`ลบสมาชิก "${member.character_name}" เรียบร้อยแล้ว`, 'สำเร็จ', '✅')
-  }
+const handleItemFileSelect = (e) => {
+  itemSelectedFile.value = e.target.files[0]
 }
 
 const handleAddInventory = async () => {
-  if (!canManageInventory.value) return showAlertMessage('เฉพาะหัวหน้า, รองหัวหน้า และคนเก็บของแก๊งเท่านั้น', 'สิทธิ์ไม่เพียงพอ', '🚫')
+  if (!itemForm.value.name.trim()) return showAlertMessage('กรุณากรอกชื่อไอเทม', 'คำเตือน', '⚠️')
   isUploadingItem.value = true
-  const success = await store.addInventoryItem(itemForm.value.name, itemForm.value.category, itemForm.value.quantity, itemSelectedFile.value)
-  isUploadingItem.value = false
-  if (success) {
-    itemForm.value.name = ''
-    itemForm.value.quantity = 1
+
+  try {
+    let imageUrl = null
+    if (itemSelectedFile.value) {
+      const fileName = `item_${Date.now()}.${itemSelectedFile.value.name.split('.').pop()}`
+      const { error: uploadErr } = await client.storage.from('inventory').upload(fileName, itemSelectedFile.value)
+      if (!uploadErr) {
+        const { data: urlData } = client.storage.from('inventory').getPublicUrl(fileName)
+        imageUrl = urlData.publicUrl
+      }
+    }
+
+    await store.addInventoryItem({
+      item_name: itemForm.value.name.trim(),
+      category: itemForm.value.category.trim(),
+      quantity: itemForm.value.quantity,
+      image_url: imageUrl
+    })
+
+    await showAlertMessage('เพิ่มไอเทมใหม่เข้าคลังเรียบร้อยแล้ว', 'สำเร็จ', '📦')
+    itemForm.value = { name: '', category: 'ทั่วไป', quantity: 1 }
     itemSelectedFile.value = null
-    await showAlertMessage('เพิ่มไอเทมเข้าคลังเรียบร้อย!', 'สำเร็จ', '📦')
+  } catch (e) {
+    console.error('Add inventory error:', e)
+    await showAlertMessage('เกิดข้อผิดพลาดในการเพิ่มไอเทม', 'เกิดข้อผิดพลาด', '❌')
+  } finally {
+    isUploadingItem.value = false
   }
 }
 
 const handleTicket = async () => {
+  if (!ticketForm.value.title.trim() || !ticketForm.value.detail.trim()) {
+    return showAlertMessage('กรุณากรอกข้อมูลคำร้องให้ครบถ้วน', 'คำเตือน', '⚠️')
+  }
+
   const userId = currentUserProfile.value?.id
   if (!userId) return showAlertMessage('ไม่พบข้อมูลผู้ใช้', 'เกิดข้อผิดพลาด', '❌')
-  const success = await store.submitTicket(userId, ticketForm.value.title, ticketForm.value.category, ticketForm.value.detail)
+
+  const success = await store.submitTicket({
+    user_id: userId,
+    title: ticketForm.value.title.trim(),
+    category: ticketForm.value.category,
+    detail: ticketForm.value.detail.trim()
+  })
+
   if (success) {
-    ticketForm.value.title = ''
-    ticketForm.value.detail = ''
-    await showAlertMessage('ส่งคำร้องเรียบร้อยแล้ว!', 'สำเร็จ', '📋')
+    await showAlertMessage('ส่งคำร้องเรียบร้อยแล้ว', 'สำเร็จ', '📋')
+    ticketForm.value = { title: '', category: 'เบิกของ/เงิน', detail: '' }
+  } else {
+    await showAlertMessage('เกิดข้อผิดพลาดในการส่งคำร้อง', 'เกิดข้อผิดพลาด', '❌')
   }
 }
 
-const getRoleBadge = (role) => {
-  if (role === 'leader') return 'bg-red-500/20 text-red-400 border border-red-500/30'
-  if (role === 'co_leader') return 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-  if (role === 'inventory_keeper') return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-  return 'bg-slate-800 text-slate-400 border border-slate-700'
-}
-
-const getRoleName = (role) => {
-  if (role === 'leader') return 'หัวหน้าแก๊ง'
-  if (role === 'co_leader') return 'รองหัวหน้า'
-  if (role === 'inventory_keeper') return 'คนเก็บของแก๊ง'
-  return 'สมาชิก'
-}
-
-const getTicketBadge = (status) => {
-  if (status === 'approved') return 'bg-green-500/20 text-green-400'
-  if (status === 'rejected') return 'bg-red-500/20 text-red-400'
-  return 'bg-amber-500/20 text-amber-400'
-}
-
-const getTicketStatusText = (status) => {
-  if (status === 'approved') return 'อนุมัติแล้ว'
-  if (status === 'rejected') return 'ไม่อนุมัติ'
-  return 'รออนุมัติ'
+const handleDeleteMember = async (member) => {
+  const isConfirmed = await showConfirmDialog(`คุณแน่ใจหรือไม่ว่าต้องการลบสมาชิก "${member.character_name}" ออกจากแก๊ง?`, 'ยืนยันการลบสมาชิก', '🗑️')
+  if (isConfirmed) {
+    await store.deleteMember(member.id)
+    await showAlertMessage('ลบสมาชิกเรียบร้อยแล้ว', 'สำเร็จ', '✅')
+  }
 }
 
 const exportCSV = () => {
   const profiles = getArray(store.profiles)
-  let csvContent = "\uFEFFชื่อในเมือง,ตำแหน่ง,เบอร์โทร,สถานะการลา,ยอดหนี้สะสม\n"
-  profiles.forEach(p => {
-    csvContent += `"${p.character_name}","${getRoleName(p.role)}","${p.phone_number || '-'}","${p.leave_status ? 'ลากิจ' : 'ปกติ'}",${p.fine_balance || 0}\n`
+  let csvContent = "data:text/csv;charset=utf-8,\uFEFF"
+  csvContent += "Name,Role,Phone,Fine Balance,Airdrop Status\n"
+
+  profiles.forEach(m => {
+    const status = getAirdropStatus(m)
+    csvContent += `"${m.character_name}","${getRoleName(m.role)}","${m.phone_number || ''}","${m.fine_balance || 0}","${status}"\n`
   })
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
+
+  const encodedUri = encodeURI(csvContent)
   const link = document.createElement("a")
-  link.setAttribute("href", url)
-  link.setAttribute("download", `pukpik_members_${new Date().toISOString().slice(0,10)}.csv`)
+  link.setAttribute("href", encodedUri)
+  link.setAttribute("download", `gang_members_${Date.now()}.csv`)
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
 }
+
+const getRoleBadge = (role) => {
+  switch (role) {
+    case 'leader': return 'bg-red-500/20 text-red-400 border border-red-500/30'
+    case 'co_leader': return 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+    case 'inventory_keeper': return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+    default: return 'bg-slate-800 text-slate-300 border border-slate-700'
+  }
+}
+
+const getRoleName = (role) => {
+  switch (role) {
+    case 'leader': return 'หัวหน้าแก๊ง'
+    case 'co_leader': return 'รองหัวหน้าแก๊ง'
+    case 'inventory_keeper': return 'คนเก็บของแก๊ง'
+    default: return 'สมาชิก'
+  }
+}
+
+const getTicketBadge = (status) => {
+  switch (status) {
+    case 'approved': return 'bg-green-500/20 text-green-400 border border-green-500/30'
+    case 'rejected': return 'bg-red-500/20 text-red-400 border border-red-500/30'
+    default: return 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+  }
+}
+
+const getTicketStatusText = (status) => {
+  switch (status) {
+    case 'approved': return 'อนุมัติแล้ว'
+    case 'rejected': return 'ไม่อนุมัติ'
+    default: return 'รอการตรวจสอบ'
+  }
+}
 </script>
 
 <style scoped>
-/* Smooth Tab Transition Effect */
 .tab-fade-enter-active,
 .tab-fade-leave-active {
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
-
 .tab-fade-enter-from {
   opacity: 0;
   transform: translateY(6px);
 }
-
 .tab-fade-leave-to {
   opacity: 0;
   transform: translateY(-6px);
 }
 
-/* Modal Pop & Scale Animation */
 .modal-pop-enter-active,
 .modal-pop-leave-active {
-  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-.modal-pop-enter-from,
+.modal-pop-enter-from {
+  opacity: 0;
+  transform: scale(0.95);
+}
 .modal-pop-leave-to {
   opacity: 0;
-  transform: scale(0.94);
-}
-
-/* Custom Scrollbar for Tab Navigation */
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  transform: scale(0.95);
 }
 </style>
