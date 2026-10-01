@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-sans relative overflow-hidden select-none">
     
-    <!-- 🌌 Background Glow Orbs -->
+    <!-- 🌌 Background Glow Orbs (เพิ่มมิติและแสงบรรยากาศ) -->
     <div class="absolute -top-40 -left-40 w-96 h-96 bg-red-600/20 rounded-full blur-[120px] pointer-events-none animate-pulse"></div>
     <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-amber-600/15 rounded-full blur-[120px] pointer-events-none"></div>
 

@@ -13,12 +13,12 @@
    <!-- 🎵 Floating Audio Player Widget -->
     <div class="fixed bottom-5 right-5 z-50 bg-slate-900/90 backdrop-blur-md border border-slate-700/80 p-3.5 rounded-2xl shadow-2xl flex flex-col gap-2.5 transition-all duration-300 hover:border-red-500/50 hover:shadow-red-900/20 group w-72 sm:w-80 hover:-translate-y-1">
       <audio 
-  ref="audioRef" 
-  :src="currentTrack.url" 
-  @ended="nextTrack" 
-  @timeupdate="onAudioTimeUpdate"
-  preload="auto"
-></audio>
+        ref="audioRef" 
+        :src="currentTrack.url" 
+        @ended="nextTrack" 
+        @timeupdate="onAudioTimeUpdate"
+        preload="auto"
+      ></audio>
       
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2 overflow-hidden flex-1">
@@ -157,7 +157,7 @@
         </button>
       </div>
 
-      <!-- Tab Content Area with Smooth Fade & Slide Transition -->
+      <!-- Tab Content Area -->
       <transition name="tab-fade" mode="out-in">
         <!-- Tab 1: รายชื่อสมาชิก & การเช็คชื่อแอร์ดรอป -->
         <div v-if="activeTab === 'members'" key="members" class="space-y-6">
@@ -245,7 +245,7 @@
             </form>
           </div>
 
-          <!-- รายการอนุมัติแอร์ดรอปรอตรวจสอบ (ยศบริหาร/หัวแก๊ง) -->
+          <!-- รายการอนุมัติแอร์ดรอปรอตรวจสอบ -->
           <div v-if="isManagement && pendingAirdropCheckins.length > 0" class="bg-slate-900/90 backdrop-blur border border-amber-500/30 rounded-xl p-6 shadow-xl animate-fade-in">
             <h2 class="text-lg font-bold text-amber-400 mb-4 flex items-center gap-2">
               <span class="w-2.5 h-2.5 bg-amber-500 rounded-full animate-ping"></span>
@@ -601,7 +601,7 @@
             </div>
           </div>
 
-          <!-- Cards Grid พร้อม Card Glow & Smooth Hover -->
+          <!-- Cards Grid -->
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div 
               v-for="item in getArray(store.inventory)" 
@@ -713,7 +713,7 @@
       </transition>
     </main>
 
-    <!-- 🚨 Custom Notification & Confirmation Modal (แจ้งเตือนกลางหน้าจอ) -->
+    <!-- 🚨 Custom Notification & Confirmation Modal -->
     <transition name="modal-pop">
       <div v-if="alertModal.show" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
         <div class="bg-slate-900 border border-slate-700/80 w-full max-w-sm rounded-2xl p-6 text-center space-y-4 shadow-2xl relative overflow-hidden">
@@ -745,7 +745,7 @@
       </div>
     </transition>
 
-    <!-- Modals (พร้อม Smooth Fade & Scale Transition) -->
+    <!-- Modals -->
     <transition name="modal-pop">
       <div v-if="showLeaveModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
         <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-xl p-6 space-y-4 shadow-2xl">
@@ -1328,19 +1328,17 @@ onMounted(async () => {
       currentTrackIndex.value = savedTrackIndex
     }
 
-    await nextTick() // รอให้ Vue อัปเดต <audio :src="..."> ให้เรียบร้อยก่อน
+    await nextTick()
 
     if (audioRef.value && savedIsPlaying) {
       audioRef.value.volume = volume.value
       
-      // พยายามเล่นเพลง
       audioRef.value.play().then(() => {
         audioRef.value.currentTime = savedTime
         isPlaying.value = true
       }).catch((err) => {
         console.log('Autoplay blocked by browser. Waiting for user interaction...', err)
         
-        // ถ้าโดนเบราว์เซอร์บล็อก ให้รอผู้ใช้คลิกส่วนใดก็ได้ในหน้า 1 ครั้ง แล้วค่อยเปิดเล่นต่อทันที
         const handleFirstInteraction = () => {
           if (audioRef.value) {
             audioRef.value.currentTime = savedTime
@@ -1513,11 +1511,10 @@ const handleWithdrawSubmit = async () => {
   }
 }
 
-// ⚡ Optimistic Update สำหรับอนุมัติสลิปส่งเงิน
+// Optimistic Update สำหรับอนุมัติสลิปส่งเงิน
 const handleApproveDeposit = async (dep, isApproved) => {
   const reviewerName = currentUserProfile.value?.character_name || 'ผู้ดูแล'
   
-  // ตัดสลิปออกจาก UI ทันที
   if (store.pendingDeposits) {
     const idx = store.pendingDeposits.findIndex(d => d.id === dep.id)
     if (idx !== -1) store.pendingDeposits.splice(idx, 1)
@@ -1525,10 +1522,9 @@ const handleApproveDeposit = async (dep, isApproved) => {
 
   showAlertMessage(isApproved ? 'อนุมัติเงินเข้าคลังเรียบร้อยแล้ว' : 'ปฏิเสธสลิปโอนเงินเรียบร้อยแล้ว', 'สำเร็จ', isApproved ? '✅' : 'ℹ️')
   
-  // ส่งคำขอหลังฉาก
   const success = await store.approveDeposit(dep, isApproved, reviewerName)
   if (!success && store.fetchPendingDeposits) {
-    await store.fetchPendingDeposits() // rollback หากล้มเหลว
+    await store.fetchPendingDeposits()
   }
 }
 
@@ -1587,7 +1583,6 @@ const handleDeleteRule = async (id) => {
   }
 }
 
-// 🛡️ เพิ่มสถานะป้องกันการกดส่งคำขอลาซ้ำ (Debounce Disable)
 const handleLeaveSubmit = async () => {
   if (isSubmittingLeave.value) return
   if (!leaveReason.value.trim()) return showAlertMessage('กรุณาระบุสาเหตุการลาหยุดด้วยครับ', 'คำเตือน', '⚠️')
@@ -1625,15 +1620,15 @@ const handleFileSelect = (event, mode) => {
   if (mode === 'airdrop') airdropFile.value = file
 }
 
-// 🕒 ตรวจสอบเวลาส่งหลักฐาน (ต้องอยู่ระหว่าง 20:30 ถึง 21:30 น.)
+// ตรวจสอบเวลาส่งหลักฐาน (ระหว่าง 20:30 ถึง 21:30 น.)
 const handleCheckin = async (mode) => {
   const userId = currentUserProfile.value?.id
   if (!userId) return showAlertMessage('ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง', 'เกิดข้อผิดพลาด', '❌')
 
   const now = new Date()
   const currentMinutes = now.getHours() * 60 + now.getMinutes()
-  const startMinutes = 20 * 60 + 30 // 20:30 (1230 นาที)
-  const endMinutes = 21 * 60 + 30   // 21:30 (1290 นาที)
+  const startMinutes = 20 * 60 + 30
+  const endMinutes = 21 * 60 + 30
 
   if (currentMinutes < startMinutes || currentMinutes > endMinutes) {
     return showAlertMessage('ขณะนี้อยู่นอกเวลาการส่งหลักฐานแอร์ดรอป (ระบบเปิดให้ส่งได้ระหว่างเวลา 20:30 น. ถึง 21:30 น. เท่านั้น)', 'นอกเวลาทำการ', '⏳')
@@ -1668,11 +1663,9 @@ const handleCheckin = async (mode) => {
   }
 }
 
-// ⚡ Optimistic Update สำหรับการอนุมัติ/ปฏิเสธแอร์ดรอป
 const handleApproveAirdrop = async (checkinId, userId, isApproved) => {
   const status = isApproved ? 'approved' : 'rejected'
   
-  // 1. เปลี่ยนสถานะในเครื่องล่วงหน้าทันที UI ตอบสนองใน 0 มิลลิวินาที
   const targetIndex = airdropCheckinsList.value.findIndex(item => item.id === checkinId)
   if (targetIndex !== -1) {
     airdropCheckinsList.value[targetIndex].status = status
@@ -1680,7 +1673,6 @@ const handleApproveAirdrop = async (checkinId, userId, isApproved) => {
 
   showAlertMessage(isApproved ? 'อนุมัติการลงแอร์ดรอปเรียบร้อยแล้ว' : 'ปฏิเสธการลงแอร์ดรอปเรียบร้อยแล้ว', 'สำเร็จ', isApproved ? '✅' : 'ℹ️')
 
-  // 2. ทำงานส่ง API ไป Supabase ในเบื้องหลัง
   try {
     const { error } = await client
       .from('airdrop_checkins')
@@ -1690,7 +1682,6 @@ const handleApproveAirdrop = async (checkinId, userId, isApproved) => {
     if (error) throw error
   } catch (e) {
     console.error('Approve Error:', e)
-    // Rollback ในกรณีเกิด Error
     if (targetIndex !== -1) {
       airdropCheckinsList.value[targetIndex].status = 'pending'
     }
@@ -1767,65 +1758,56 @@ const getTicketBadge = (status) => {
 const getTicketStatusText = (status) => {
   if (status === 'approved') return 'อนุมัติแล้ว'
   if (status === 'rejected') return 'ไม่อนุมัติ'
-  return 'รอการตรวจ'
+  return 'รออนุมัติ'
 }
 
 const exportCSV = () => {
   const profiles = getArray(store.profiles)
-  if (profiles.length === 0) return showAlertMessage('ไม่มีข้อมูลสมาชิกให้ส่งออก', 'คำเตือน', '⚠️')
-  const headers = 'Character Name,Role,Phone,Fine Balance,Leave Status,Airdrop Status\n'
-  const rows = profiles.map(p => {
-    let airdropText = 'Did Not Check In'
-    const status = getAirdropStatus(p)
-    if (status === 'approved') airdropText = 'Approved'
-    else if (status === 'pending') airdropText = 'Pending Approval'
-    else if (status === 'leave') airdropText = 'On Leave'
-
-    return `"${p.character_name}","${p.role}","${p.phone_number || ''}","${p.fine_balance || 0}","${p.leave_status ? 'Leave' : 'Normal'}","${airdropText}"`
-  }).join('\n')
-  const blob = new Blob([headers + rows], { type: 'text/csv' })
-  const url = window.URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = 'airdrop_checkin_report.csv'
-  a.click()
+  let csvContent = "\uFEFFชื่อในเมือง,ตำแหน่ง,เบอร์โทร,สถานะการลา,ยอดหนี้สะสม\n"
+  profiles.forEach(p => {
+    csvContent += `"${p.character_name}","${getRoleName(p.role)}","${p.phone_number || '-'}","${p.leave_status ? 'ลากิจ' : 'ปกติ'}",${p.fine_balance || 0}\n`
+  })
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.setAttribute("href", url)
+  link.setAttribute("download", `pukpik_members_${new Date().toISOString().slice(0,10)}.csv`)
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 </script>
 
 <style scoped>
-/* Tab Fade & Slide Animation */
+/* Smooth Tab Transition Effect */
 .tab-fade-enter-active,
 .tab-fade-leave-active {
-  transition: all 0.25s ease-out;
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
 .tab-fade-enter-from {
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(6px);
 }
 
 .tab-fade-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
+  transform: translateY(-6px);
 }
 
-/* Modal Pop Animation */
+/* Modal Pop & Scale Animation */
 .modal-pop-enter-active,
 .modal-pop-leave-active {
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.modal-pop-enter-from {
-  opacity: 0;
-  transform: scale(0.95);
-}
-
+.modal-pop-enter-from,
 .modal-pop-leave-to {
   opacity: 0;
-  transform: scale(0.95);
+  transform: scale(0.94);
 }
 
-/* Custom Scrollbar Hide */
+/* Custom Scrollbar for Tab Navigation */
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
